@@ -1,0 +1,104 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          noosfero
+# Required-Start:    $remote_fs
+# Required-Stop:     $remote_fs
+# Should-Start:      postgresql
+# Should-Stop:       postgresql
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Example initscript
+# Description:       This file should be used to construct scripts to be
+#                    placed in /etc/init.d.
+### END INIT INFO
+
+# Sample init.d script for noosfero.
+#
+# This script was based on the skeleton init.d script present in a Debian
+# GNU/Linux system (sid), on Sat Feb 16 11:12:03 BRT 2008. It must be placed in
+# /etc/init.d/ (or whatever place your system uses for startup scripts), and you must create a file /etc/default/noosfero defining the variable
+#
+# Author: Antonio Terceiro <terceiro@colivre.coop.br>
+
+# Do NOT "set -e"
+
+# PATH should only include /usr/* if it runs after the mountnfs.sh script
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+DESC="Noosfero web platform"
+NAME=<%= @service_name %>
+SCRIPTNAME=/etc/init.d/$NAME
+
+# default values
+NOOSFERO_DIR=<%= @code_path %>
+NOOSFERO_USER=<%= @user %>
+
+# Load the VERBOSE setting and other rcS variables
+. /lib/init/vars.sh
+
+if [ -z "$NOOSFERO_DIR" ] || [ -z "$NOOSFERO_USER" ]; then
+  echo "NOOSFERO_DIR or NOOSFERO_USER not defined, noosfero not being started."
+  echo "Both variables must be defined in /etc/default/noosfero"
+  exit 0
+fi
+
+if test -x /usr/sbin/noosfero-check-dbconfig ; then
+  if ! noosfero-check-dbconfig; then
+    echo "Noosfero database access not configured, service disabled."
+    exit 0
+  fi
+fi
+
+######################
+
+main_script() {
+  cd $NOOSFERO_DIR
+  if [ "$NOOSFERO_USER" != "$USER" ]; then
+    su $NOOSFERO_USER -l -c "./script/production $1"
+  else
+    ./script/production $1
+  fi
+}
+
+
+do_start() {
+  if ! running; then
+    # actually start the service
+    main_script start
+  else
+    echo 'Noosfero is already running, nothing to do...'
+  fi
+}
+
+do_stop() {
+  if running; then
+    main_script stop
+  else
+    echo 'Noosfero is already stopped, nothing to do...'
+  fi
+}
+
+do_restart() {
+  main_script restart
+  <% if @server['backend'] == 'unicorn' %>
+  kill `cat $NOOSFERO_DIR/tmp/pids/unicorn.pid`
+  <% end %>
+}
+
+running(){
+  pgrep -u <%= @user %> -f 'delayed_job' > /dev/null
+}
+
+case "$1" in
+  start|stop|restart|setup)
+    do_$1
+    ;;
+  force-reload)
+    do_restart
+    ;;
+  *)
+    echo "Usage: $SCRIPTNAME {start|stop|restart|force-reload|setup}" >&2
+    exit 3
+    ;;
+esac
+
+:

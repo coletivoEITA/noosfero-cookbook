@@ -1,0 +1,4 @@
+production:
+  <% @settings.each do |key, value| %>
+  <%= key %>: <%= value.to_json %>
+  <% end %>

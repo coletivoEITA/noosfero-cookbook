@@ -1,0 +1,59 @@
+<VirtualHost *:*>
+    ServerName www.<%= @server_name %>
+    RedirectMatch ^(.*)$ http://<%= @server_name %>$1
+</VirtualHost>
+
+<% @custom_domains.each do |domain| %>
+<VirtualHost *:*>
+    ServerName www.<%= @domain %>
+    RedirectMatch ^(.*)$ http://<%= @domain %>$1
+</VirtualHost>
+<% end %>
+
+<VirtualHost *:*>
+  ServerName <%= @server_name %>
+  <% @custom_domains.each do |domain| %>
+  ServerAlias <%= @domain %>
+  <% end %>
+
+  DocumentRoot "<%= "#{@code_path}/public" %>"
+  <Directory "<%= "#{@code_path}/public" %>">
+    Options FollowSymLinks
+    AllowOverride None
+    Require all granted
+    Order Allow,Deny
+    Allow from all
+  </Directory>
+
+  ProxyPreserveHost On
+  RewriteEngine On
+
+  # Rewrite index to check for static index.html
+  RewriteRule ^/$ /index.html [QSA]
+
+  # Rewrite to check for Rails cached page
+  RewriteRule ^([^.]+)$ $1.html [QSA]
+
+  RewriteCond %{DOCUMENT_ROOT}/%{REQUEST_FILENAME} !-f
+  RewriteRule ^/(.*)$ balancer://<%= @service_name %>%{REQUEST_URI} [P,QSA,L]
+  <Proxy balancer://<%= @service_name %>>
+    Allow from any
+    <% if @server['backend'] == 'unicorn' %>
+    BalancerMember unix:<%= @run_path %>/unicorn.sock
+    <% elsif @server['backend'] == 'thin' %>
+    <% @server['workers'].times.each do |i| %>
+    BalancerMember http://127.0.0.1:<%= @server['port'].to_i + i %>
+    <% end %>
+    <% end %>
+  </Proxy>
+
+  ErrorDocument 503 /503.html
+
+  ErrorLog <%= @log_path %>/error.log
+  LogLevel warn
+  CustomLog <%= @log_path %>/access.log combined
+
+  Include <%= @code_path %>/etc/noosfero/apache/cache.conf
+
+</VirtualHost>
+
