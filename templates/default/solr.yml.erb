@@ -1,0 +1,12 @@
+# Config file for the acts_as_solr plugin.
+#
+# If you change the host or port number here, make sure you update
+# them in your Solr config file
+
+# No change is needed to support multitenancy. Only one solr environment will be used.
+# Just remember to use 'rake multitenancy:reindex' for reindexation.
+
+<%= @rails_env %>:
+  url: http://<%= @plugins_settings['solr']['address'] %>:<%= @plugins_settings['solr']['port'] %>/solr
+  jvm_options: -server -Xmx<%= @plugins_settings['solr']['memory'] %>M -Xms64M
+  timeout: <%= @plugins_settings['solr']['timeout'] %>

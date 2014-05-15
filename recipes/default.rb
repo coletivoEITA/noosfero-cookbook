@@ -7,9 +7,13 @@
 # GPLv3+
 #
 
+Noosfero::Helpers.init
+::Chef::Resource::Bash.send :include, Noosfero::Helpers
+
 # User/group
 noosfero_user = node['noosfero']['user']
 noosfero_group = node['noosfero']['group']
+rails_env = node['noosfero']['rails_env']
 
 user noosfero_user do
   supports :manage_home => true
@@ -22,7 +26,7 @@ end
 path = node['noosfero']['path']
 %w[ code_path data_path config_path log_path run_path tmp_path ].each do |path|
   directory node['noosfero'][path] do
-    owner noosfero_user; group noosfero_group
+    user noosfero_user; group noosfero_group
   end
 end
 if not path
@@ -35,10 +39,12 @@ end
 
 # Upgrade
 bash "noosfero-upgrade" do
+  user noosfero_user; group noosfero_group
   cwd node['noosfero']['code_path']
-  owner noosfero_user; group noosfero_group
   code <<-EOH
+    #{rvm_load}
     rake noosfero:translations:compile
+    #{node['noosfero']['upgrade_script']}
   EOH
 end
 
@@ -47,6 +53,7 @@ git node['noosfero']['code_path'] do
   user noosfero_user; group noosfero_group
   repository node['noosfero']['git_url']
   revision node['noosfero']['git_revision']
+  enable_submodules
   action :sync
   notifies :run, 'bash[noosfero-upgrade]'
 end
@@ -54,17 +61,17 @@ end
 # Dependencies
 
 dependencies_with = node['noosfero']['dependencies_with']
-if dependencies_with == 'packages'
-  %w[ ruby rake po4a libgettext-ruby-util libgettext-ruby1.8 libsqlite3-ruby rcov librmagick-ruby libredcloth-ruby libhpricot-ruby libwill-paginate-ruby iso-codes libfeedparser-ruby libdaemons-ruby thin tango-icon-theme ].each do |p|
-    package p
-  end
-elsif dependencies_with == 'bundler'
-  %w[ po4a iso-codes tango-icon-theme curl libmagickwand-dev libpq-dev libreadline-dev libsqlite3-dev libxslt1-dev ].each do |p|
-    package p
-  end
-  execute 'bundle install' do
+node['noosfero']["packages_for_#{dependencies_with}"].each do |p|
+  package p
+end
+if dependencies_with == 'bundler'
+  bash 'bundle-install' do
+    user noosfero_user; group noosfero_group
     cwd node['noosfero']['code_path']
-    command "bundle check || bundle install"
+    command <<-EOH
+      #{rvm_load}
+      bundle check || bundle install
+    EOH
   end
 end
 
@@ -75,38 +82,51 @@ template "#{node['noosfero']['code_path']}/config/database.yml" do
   notifies :restart, "service[#{node['noosfero']['service_name']}]"
 end
 
-postgresql_database_user node['noosfero']['db']['username'] do
-  connection node['noosfero']['db']
-  action :create
-end
-postgresql_database node['noosfero']['db']['name'] do
-  connection node['noosfero']['db']
-  action :create
-  notifies :run, 'bash[create-environment-if-needed]'
-end
+# FIXME
+#postgresql_database_user node['noosfero']['db']['username'] do
+#  owner noosfero_user
+#  action :create
+#end
+#postgresql_database node['noosfero']['db']['name'] do
+#  connection node['noosfero']['db']
+#  owner noosfero_user
+#  action :create
+#  notifies :run, 'bash[create-environment-if-needed]'
+#end
+#execute 'create-database' do
+#   cwd node['noosfero']['code_path']
+#  command <<-EOH
+#    sudo -u postgres createuser #{node['noosfero']['db']['username']} --no-superuser --createdb --no-createrole
+#    sudo -u #{noosfero_user} createdb #{node['noosfero']['db']['name']}
+#    #{rvm_load}
+#    RAILS_ENV=#{rails_env} rake db:schema:load
+#  EOH
+#end
 
 # Environment
-bash "create-environment-if-needed" do
-  cwd node['noosfero']['code_path']
-  code <<-EOH
-  script/runner '
-  if (e = Environment.default).blank?
-    e = Environment.create! :name => "#{node['noosfero']['environment']['name']}"
-    e.domains.create! :name => "#{node['noosfero']['environment']['domain']}", :is_default => true
-  end
-  '
-  EOH
-end
+#bash "create-environment-if-needed" do
+#  user noosfero_user; group noosfero_group
+#  cwd node['noosfero']['code_path']
+#  code <<-EOH
+#    #{rvm_load}
+#    RAILS_ENV=#{rails_env} script/runner '
+#    if (e = Environment.default).blank?
+#      e = Environment.create! :name => "#{node['noosfero']['environment']['name']}"
+#      e.domains.create! :name => "#{node['noosfero']['environment']['domain']}", :is_default => true
+#    end
+#    '
+#  EOH
+#end
 
 # Settings
 template "#{node['noosfero']['code_path']}/config/noosfero.yml" do
-  variables({:settings => node['noosfero']['settings']})
+  variables node['noosfero']
 
   notifies :restart, "service[#{node['noosfero']['service_name']}]"
 end
 
 # Plugins
-plugins = node['noosfero']['plugins']
+plugins = node['noosfero']['plugins'].dup
 include_recipe 'java' if plugins.include? 'solr'
 
 enabled_plugins = []
@@ -119,32 +139,41 @@ end
 plugins.sort!
 enabled_plugins.sort!
 if plugins != enabled_plugins
-  execute "disable-all-plugins" do
+  bash "disable-all-plugins" do
+    user noosfero_user; group noosfero_group
     cwd node['noosfero']['code_path']
     command "script/noosfero-plugins disableall"
   end
-  execute "enabled-selected-plugins" do
+  bash "enabled-selected-plugins" do
+    user noosfero_user; group noosfero_group
     cwd node['noosfero']['code_path']
     command "script/noosfero-plugins enable #{plugins}"
     notifies :restart, "service[#{node['noosfero']['service_name']}]"
   end
 end
 
-# Server backend
-server_backend = node['noosfero']['server']['backend']
-template "#{node['noosfero']['code_path']}/config/thin.yml" do
-  vars = node['noosfero']
-  vars['server'].merge! :workers => 0 if server_backend == 'unicorn'
-  variables vars
+# Plugin: solr
+template "#{node['noosfero']['code_path']}/plugins/solr/config/solr.yml" do
+  variables node['noosfero']
 
   action :create
-end
+end if node['noosfero']['plugins'].include? 'solr'
+
+# Server backend
+server_backend = node['noosfero']['server']['backend']
 if server_backend == 'unicorn'
   template "#{node['noosfero']['code_path']}/config/unicorn.conf.rb" do
     variables node['noosfero']
 
     action :create
   end
+end
+template "#{node['noosfero']['code_path']}/config/thin.yml" do
+  vars = node['noosfero'].to_hash
+  vars['server']['workers'] = 0 if server_backend == 'unicorn'
+  variables vars
+
+  action :create
 end
 
 # Web Server
@@ -174,20 +203,21 @@ end
 
 # TODO
 if varnish = node['noosfero']['use_varnish']
-  node['varnish']['version'] = '2.1'
   include_recipe 'varnish'
+  node['varnish']['version'] = '2.1'
 end
 
 # Init service
-service node['noosfero']['service_name'] do
-  init_command "/etc/init.d/#{node['noosfero']['service_name']}"
-  action :enable
-end
 template "/etc/init.d/#{node['noosfero']['service_name']}" do
   source "init.d.erb"
   owner user
   group group
+  mode "755"
   variables node['noosfero']
   notifies :restart, "service[#{node['noosfero']['service_name']}]"
+  action :create
 end
-
+service node['noosfero']['service_name'] do
+  init_command "/etc/init.d/#{node['noosfero']['service_name']}"
+  action :enable
+end

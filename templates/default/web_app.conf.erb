@@ -5,15 +5,15 @@
 
 <% @custom_domains.each do |domain| %>
 <VirtualHost *:*>
-    ServerName www.<%= @domain %>
-    RedirectMatch ^(.*)$ http://<%= @domain %>$1
+    ServerName www.<%= domain %>
+    RedirectMatch ^(.*)$ http://<%= domain %>$1
 </VirtualHost>
 <% end %>
 
 <VirtualHost *:*>
   ServerName <%= @server_name %>
   <% @custom_domains.each do |domain| %>
-  ServerAlias <%= @domain %>
+  ServerAlias <%= domain %>
   <% end %>
 
   DocumentRoot "<%= "#{@code_path}/public" %>"

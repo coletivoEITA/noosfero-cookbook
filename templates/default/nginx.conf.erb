@@ -5,8 +5,8 @@ server {
 
 <% @custom_domains.each do |domain| %>
 server {
-  server_name www.<%= @domain %>;
-  rewrite ^ $scheme://<%= @domain %>$request_uri?;
+  server_name www.<%= domain %>;
+  rewrite ^ $scheme://<%= domain %>$request_uri?;
 }
 <% end %>
 
@@ -21,7 +21,7 @@ upstream <%= @service_name %> {
 }
 
 server {
-  server_name <%= @domain %> <% @custom_domains.join ' ' %>;
+  server_name <%= @server_name %> <%= @custom_domains.join ' ' %>;
   root <%= @code_path %>/public;
 
   access_log <%= @log_path %>/access.log;

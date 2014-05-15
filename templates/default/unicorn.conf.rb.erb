@@ -1,4 +1,4 @@
-RailsRoot = <%= @code_path %>
+RailsRoot = "<%= @code_path %>"
 PidsDir = "#{RailsRoot}/tmp/pids"
 
 ListenAddress = "127.0.0.1"
@@ -6,7 +6,7 @@ ListenPort = <%= @server['port'] %>
 UnixListen = "run/unicorn.sock"
 Backlog = 2048
 
-Workers = <%= @server['port'] %>
+Workers = <%= @server['workers'] %>
 Timeout = <%= @server['timeout'] %>
 
 WorkerWarmUp = true

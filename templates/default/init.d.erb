@@ -50,20 +50,34 @@ fi
 
 ######################
 
-main_script() {
-  cd $NOOSFERO_DIR
+noosfero_run() {
   if [ "$NOOSFERO_USER" != "$USER" ]; then
-    su $NOOSFERO_USER -l -c "./script/production $1"
+  <% if @rvm_load %>
+    su $NOOSFERO_USER -l -c "cd $NOOSFERO_DIR && rvm use <%= @rvm_load %> && $*"
+  <% else %>
+    su $NOOSFERO_USER -l -c "cd $NOOSFERO_DIR && $*"
+  <% end %>
   else
-    ./script/production $1
+    cd $NOOSFERO_DIR && $*
   fi
+}
+
+main_script() {
+  noosfero_run script/<%= @rails_env %> $1
 }
 
 
 do_start() {
   if ! running; then
+  <% if @plugins.include? 'solr' %>
+    noosfero_run RAILS_ENV=<%= @rails_env %> rake solr:start
+  <% end %>
     # actually start the service
     main_script start
+    # FIXME: move to script/<%= @rails_env %>
+  <% if @server['backend'] == 'unicorn' %>
+    noosfero_run bundle exec unicorn_rails -c config/unicorn.conf.rb -E <%= @rails_env %>
+  <% end %>
   else
     echo 'Noosfero is already running, nothing to do...'
   fi
@@ -71,17 +85,32 @@ do_start() {
 
 do_stop() {
   if running; then
+  <% if @plugins.include? 'solr' %>
+    noosfero_run RAILS_ENV=<%= @rails_env %> rake solr:stop
+  <% end %>
     main_script stop
+    # FIXME: move to script/<%= @rails_env %>
+  <% if @server['backend'] == 'unicorn' %>
+    kill `cat $NOOSFERO_DIR/tmp/pids/unicorn.pid` 2>&1 > /dev/null
+  <% end %>
   else
     echo 'Noosfero is already stopped, nothing to do...'
   fi
 }
 
 do_restart() {
-  main_script restart
-  <% if @server['backend'] == 'unicorn' %>
-  kill `cat $NOOSFERO_DIR/tmp/pids/unicorn.pid`
+  if ! running; then
+    do_start
+  else
+  <% if @plugins.include? 'solr' %>
+    noosfero_run RAILS_ENV=<%= @rails_env %> rake solr:stop
   <% end %>
+    main_script restart
+    # FIXME: move to script/<%= @rails_env %>
+  <% if @server['backend'] == 'unicorn' %>
+    kill -USR2 `cat $NOOSFERO_DIR/tmp/pids/unicorn.pid` 2>&1 > /dev/null
+  <% end %>
+  fi
 }
 
 running(){
