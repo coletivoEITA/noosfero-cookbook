@@ -76,7 +76,7 @@ do_start() {
     main_script start
     # FIXME: move to script/<%= @rails_env %>
   <% if @server['backend'] == 'unicorn' %>
-    noosfero_run bundle exec unicorn_rails -c config/unicorn.conf.rb -E <%= @rails_env %>
+    noosfero_run bundle exec unicorn_rails -D -c config/unicorn.conf.rb -E <%= @rails_env %>
   <% end %>
   else
     echo 'Noosfero is already running, nothing to do...'
