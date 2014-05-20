@@ -10,11 +10,15 @@
 Noosfero::Helpers.init
 ::Chef::Resource::Bash.send :include, Noosfero::Helpers
 
-# User/group
 noosfero_user = node['noosfero']['user']
 noosfero_group = node['noosfero']['group']
 rails_env = node['noosfero']['rails_env']
+dependencies_with = node['noosfero']['dependencies_with']
+path = node['noosfero']['path']
+server_backend = node['noosfero']['server']['backend']
+plugins = node['noosfero']['plugins'].dup
 
+# User/group
 user noosfero_user do
   supports :manage_home => true
   home (if noosfero_user == 'noosfero' then noosfero['code_path'] else "/home/#{noosfero_user}" end)
@@ -23,7 +27,6 @@ user noosfero_user do
 end
 
 # Directories
-path = node['noosfero']['path']
 %w[ code_path data_path config_path log_path run_path tmp_path ].each do |path|
   directory node['noosfero'][path] do
     user noosfero_user; group noosfero_group
@@ -46,6 +49,7 @@ bash "noosfero-upgrade" do
     rake noosfero:translations:compile
     #{node['noosfero']['upgrade_script']}
   EOH
+  notifies :run, 'bash[bundle-install]' if dependencies_with == 'bundler'
 end
 
 # Code
@@ -60,7 +64,6 @@ end
 
 # Dependencies
 
-dependencies_with = node['noosfero']['dependencies_with']
 node['noosfero']["packages_for_#{dependencies_with}"].each do |p|
   package p
 end
@@ -126,7 +129,6 @@ template "#{node['noosfero']['code_path']}/config/noosfero.yml" do
 end
 
 # Plugins
-plugins = node['noosfero']['plugins'].dup
 include_recipe 'java' if plugins.include? 'solr'
 
 enabled_plugins = []
@@ -160,7 +162,6 @@ template "#{node['noosfero']['code_path']}/plugins/solr/config/solr.yml" do
 end if node['noosfero']['plugins'].include? 'solr'
 
 # Server backend
-server_backend = node['noosfero']['server']['backend']
 if server_backend == 'unicorn'
   template "#{node['noosfero']['code_path']}/config/unicorn.conf.rb" do
     variables node['noosfero']
