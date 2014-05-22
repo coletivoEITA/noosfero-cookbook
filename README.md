@@ -5,6 +5,7 @@ Install/configure Noosfero social-economic network (see http://noosfero.org)
 Attributes
 ----------
 #### noosfero::default
+
 The default recipe runs others recipes according to the settings
 | Attribute | Description | Default |
 | --------  | --------    | ------- |
@@ -13,6 +14,7 @@ The default recipe runs others recipes according to the settings
 | <tt>node[:noosfero][:rvm_load]</tt> | The ruby string to be load (e.g. "ree@noosfero") | <tt>"system"</tt> |
 
 #### noosfero::install
+
 <table>
   <tr>
     <th>Attribute</th>
