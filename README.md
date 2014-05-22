@@ -6,28 +6,12 @@ Attributes
 ----------
 #### noosfero::default
 The default recipe runs others recipes according to the settings
-<table>
-  <tr>
-    <th>Attribute</th>
-    <th>Description</th>
-    <th>Default</th>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:service_name]</tt></td>
-    <td>The Noosfero's service name, which define the init.d script name and paths</td>
-    <td><tt>"noosfero"</tt></td>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:rails_env]</tt></td>
-    <td>The Rails environment to be used</td>
-    <td><tt>"production"</tt></td>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:rvm_load]</tt></td>
-    <td>The ruby string to be load (e.g. "ree@noosfero")</td>
-    <td><tt>"system"</tt></td>
-  </tr>
-</table>
+| Attribute | Description | Default |
+| --------  | --------    | ------- |
+| <tt>node[:noosfero][:service_name]</tt>  | The Noosfero's service name, which define the init.d script name and paths | <tt>"noosfero"</tt> |
+| <tt>node[:noosfero][:rails_env]</tt> | The Rails environment to be used | <tt>"production"</tt> |
+| <tt>node[:noosfero][:rvm_load]</tt> | The ruby string to be load (e.g. "ree@noosfero") | <tt>"system"</tt> |
+
 #### noosfero::install
 <table>
   <tr>
