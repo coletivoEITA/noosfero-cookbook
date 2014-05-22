@@ -1,10 +1,12 @@
 server {
+  listen <%= node[:nginx][:listen_ports].first %>;
   server_name www.<%= @server_name %>;
   rewrite ^ $scheme://<%= @server_name %>$request_uri?;
 }
 
 <% @custom_domains.each do |domain| %>
 server {
+  listen <%= node[:nginx][:listen_ports].first %>;
   server_name www.<%= domain %>;
   rewrite ^ $scheme://<%= domain %>$request_uri?;
 }
@@ -21,6 +23,7 @@ upstream <%= @service_name %> {
 }
 
 server {
+  listen <%= node[:nginx][:listen_ports].first %>;
   server_name <%= @server_name %> <%= @custom_domains.join ' ' %>;
   root <%= @code_path %>/public;
 

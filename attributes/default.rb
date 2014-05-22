@@ -1,11 +1,3 @@
-#
-# Cookbook Name:: noosfero
-# Recipe:: default
-#
-# Copyright 2014, Bráulio Bhavamitra <braulio@eita.org.br>
-#
-# GPLv3+
-#
 
 default[:noosfero][:service_name] = "noosfero"
 service_name = node[:noosfero][:service_name]
@@ -38,7 +30,7 @@ else
   default[:noosfero][:tmp_path] = "/var/tmp/#{service_name}"
 end
 
-default[:noosfero][:rvm_load] = ''
+default[:noosfero][:rvm_load] = "default"
 default[:noosfero][:dependencies_with] = 'quick_start'
 
 case node[:platform_family]
@@ -53,14 +45,21 @@ default[:noosfero][:cache][:server] = 'varnish'
 default[:varnish][:version] = '2.1'
 default[:varnish][:vcl_cookbook] = 'noosfero'
 
-default[:noosfero][:proxy_server] = 'apache'
 default[:noosfero][:server] = {}
+default[:noosfero][:server][:proxy] = 'apache'
 default[:noosfero][:server][:backend] = 'thin'
 default[:noosfero][:server][:workers] = 4
 default[:noosfero][:server][:port] = 50000
 default[:noosfero][:server][:timeout] = 30
 
+default[:noosfero][:server][:proxy_port] = case node[:noosfero][:server][:proxy]
+                                           when 'apache' then node[:apache][:listen_ports].first
+                                           when 'nginx' then node[:nginx][:listen_ports].first
+                                           end
+default[:noosfero][:cache][:backend_port] = node[:noosfero][:server][:proxy_port]
+
 default[:noosfero][:db] = {}
+default[:noosfero][:db][:create_from_dump] = nil
 default[:noosfero][:db][:name] = service_name
 default[:noosfero][:db][:hostname] = 'localhost'
 default[:noosfero][:db][:port] = node[:postgresql][:config][:port]

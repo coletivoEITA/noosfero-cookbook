@@ -1,33 +1,31 @@
-plugins = node[:noosfero][:plugins].dup
+plugins = node[:noosfero][:plugins].sort
 
-include_recipe 'java' if plugins.include? 'solr'
+rvm_shell "noosfero-enabled-selected-plugins" do
+  user node[:noosfero][:user]; group node[:noosfero][:group]
+  cwd node[:noosfero][:code_path]
+  ruby_string node[:noosfero][:rvm_load]
+  code <<-EOH
+    script/noosfero-plugins disableall
+    script/noosfero-plugins enable #{plugins.join ' '}
+  EOH
 
-enabled_plugins = []
-ruby_block "find-enabled-plugins" do
-  block do
-    plugins = `sh -c 'cd #{node[:noosfero][:code_path]}/config/plugins && echo */'`
-    enabled_plugins = plugins.split '/ '
-  end
-end
-plugins.sort!
-enabled_plugins.sort!
-if plugins != enabled_plugins
-  bash "disable-all-plugins" do
-    user node[:noosfero][:user]; group node[:noosfero][:group]
-    cwd node[:noosfero][:code_path]
-    command "script/noosfero-plugins disableall"
-  end
-  bash "enabled-selected-plugins" do
-    user node[:noosfero][:user]; group node[:noosfero][:group]
-    cwd node[:noosfero][:code_path]
-    command "script/noosfero-plugins enable #{plugins}"
-    notifies :restart, "service[#{node[:noosfero][:service_name]}]"
+  notifies :restart, "service[#{node[:noosfero][:service_name]}]"
+
+  only_if do
+    cmd = Mixlib::ShellOut.new "sh -c 'cd #{node[:noosfero][:code_path]}/config/plugins && echo */'"
+    overview = cmd.run_command
+    current_enabled_plugins = overview.stdout.split('/ ').sort
+    plugins != current_enabled_plugins
   end
 end
 
 # Plugin: solr
-template "#{node[:noosfero][:code_path]}/plugins/solr/config/solr.yml" do
-  variables node[:noosfero]
+if plugins.include? 'solr'
+  include_recipe 'java'
 
-  action :create
-end if node[:noosfero][:plugins].include? 'solr'
+  template "#{node[:noosfero][:code_path]}/plugins/solr/config/solr.yml" do
+    variables node[:noosfero]
+
+    action :create
+  end
+end

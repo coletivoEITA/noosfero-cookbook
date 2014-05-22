@@ -1,3 +1,5 @@
+include_recipe 'rvm'
+
 dependencies_with = node[:noosfero][:dependencies_with]
 
 node[:noosfero]["packages_for_#{dependencies_with}"].each do |p|
@@ -5,19 +7,22 @@ node[:noosfero]["packages_for_#{dependencies_with}"].each do |p|
 end
 
 if dependencies_with == 'bundler'
-  bash 'bundle-install' do
-    user node[:noosfero][:user]; group node[:noosfero][:group]
+  rvm_shell 'noosfero-bundle-install' do
+    user node[:noosfero][:user]; group node[:noosfero][:group] if node[:noosfero][:rvm_load]
     cwd node[:noosfero][:code_path]
-    command <<-EOH
-      #{gems_load}
+    ruby_string node[:noosfero][:rvm_load]
+    code <<-EOH
       bundle check || bundle install
     EOH
   end
 elsif dependencies_with == 'quick_start'
-  execute 'Run quick-start' do
+  rvm_shell 'noosfero-quick-start' do
+    user node[:noosfero][:user]; group node[:noosfero][:group] if node[:noosfero][:rvm_load]
     cwd node[:noosfero][:code_path]
-    environment environment_variables
-    command 'sh script/quick-start'
+    ruby_string node[:noosfero][:rvm_load]
+    code <<-EOH
+      script/quick-start
+    EOH
   end
 end
 

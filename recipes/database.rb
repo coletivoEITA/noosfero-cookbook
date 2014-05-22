@@ -24,7 +24,12 @@ end
 postgresql_database node[:noosfero][:db][:name] do
   connection postgresql_connection
   action :create
-  notifies :run, 'bash[create-environment-if-needed]'
+  if node[:noosfero][:db][:create_from_dump]
+    notifies :run, 'rvm_shell[noosfero-load-dump]'
+  else
+    notifies :run, 'rvm_shell[noosfero-schema-load]'
+    notifies :run, 'rvm_shell[noosfero-create-environment]'
+  end
 end
 postgresql_database_user node[:noosfero][:db][:username] do
   connection postgresql_connection
@@ -39,13 +44,38 @@ template "#{node[:noosfero][:code_path]}/config/database.yml" do
   notifies :restart, "service[#{node[:noosfero][:service_name]}]"
 end
 
-#execute 'create-database' do
-#  cwd node[:noosfero][:code_path]
-#  command <<-EOH
-#    sudo -u postgres createuser #{node[:noosfero][:db][:username]} --no-superuser --createdb --no-createrole
-#    sudo -u #{node[:noosfero][:user]} createdb #{node[:noosfero][:db][:name]}
-#    #{gems_load}
-#    RAILS_ENV=#{rails_env} rake db:schema:load
-#  EOH
-#end
+rvm_shell "noosfero-load-dump" do
+  user node[:noosfero][:user]; group node[:noosfero][:group]
+  cwd node[:noosfero][:code_path]
+  ruby_string node[:noosfero][:rvm_load]
+  code <<-EOH
+    psql #{node[:noosfero][:db][:name]} < #{node[:noosfero][:db][:create_from_dump]}
+  EOH
+  action :nothing # run by database creation
+end
+
+rvm_shell "noosfero-schema-load" do
+  user node[:noosfero][:user]; group node[:noosfero][:group]
+  cwd node[:noosfero][:code_path]
+  ruby_string node[:noosfero][:rvm_load]
+  code <<-EOH
+    RAILS_ENV=#{node[:noosfero][:rails_env]} rake db:schema:load
+  EOH
+  action :nothing # run by database creation
+end
+
+rvm_shell "noosfero-create-environment" do
+  user node[:noosfero][:user]; group node[:noosfero][:group]
+  cwd node[:noosfero][:code_path]
+  ruby_string node[:noosfero][:rvm_load]
+  code <<-EOH
+    RAILS_ENV=#{node[:noosfero][:rails_env]} script/runner '
+        e = Environment.create! :name => "#{node[:noosfero][:environment][:name]}"
+        e.domains.create! :name => "#{node[:noosfero][:environment][:domain]}", :is_default => true
+      end
+    '
+  EOH
+  action :nothing # run by database creation
+  not_if node[:noosfero][:environment].nil?
+end
 

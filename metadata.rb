@@ -19,4 +19,6 @@ depends         'postgresql'
 depends         'varnish'
 depends         'memcached'
 
+depends         'rvm'
+
 depends         'java'

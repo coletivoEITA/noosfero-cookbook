@@ -12,10 +12,9 @@ git node[:noosfero][:code_path] do
   user node[:noosfero][:user]; group node[:noosfero][:group]
   repository node[:noosfero][:git_url]
   revision node[:noosfero][:git_revision]
-  enable_submodules
-  notifies :run, 'bash[noosfero-upgrade]'
-  #action :sync
-  action :nothing
+  enable_submodules true
+  notifies :run, 'rvm_shell[noosfero-upgrade]'
+  action :sync
 end
 
 # Directories
@@ -26,21 +25,21 @@ end
 end
 if not node[:noosfero][:path]
   %w[ log run tmp ].each do |dir|
-    link node[:noosfero][dir] do
+    link node[:noosfero]["#{dir}_path"] do
       to "#{node[:noosfero][:code_path]}/#{dir}"
     end
   end
 end
 
 # Upgrade
-bash "noosfero-upgrade" do
+rvm_shell "noosfero-upgrade" do
   user node[:noosfero][:user]; group node[:noosfero][:group]
   cwd node[:noosfero][:code_path]
+  ruby_string node[:noosfero][:rvm_load]
   code <<-EOH
-    #{gems_load}
     rake noosfero:translations:compile
     #{node[:noosfero][:upgrade_script]}
   EOH
-  notifies :run, 'bash[bundle-install]' if node[:noosfero][:dependencies_with] == 'bundler'
+  notifies :run, 'rvm_shell[noosfero-bundle-install]' if node[:noosfero][:dependencies_with] == 'bundler'
   action :nothing
 end

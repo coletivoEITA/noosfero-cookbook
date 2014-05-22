@@ -22,6 +22,11 @@ The default recipe runs others recipes according to the settings
     <td>The Rails environment to be used</td>
     <td><tt>"production"</tt></td>
   </tr>
+  <tr>
+    <td><tt>node[:noosfero][:rvm_load]</tt></td>
+    <td>The ruby string to be load (e.g. "ree@noosfero")</td>
+    <td><tt>"system"</tt></td>
+  </tr>
 </table>
 #### noosfero::install
 <table>
@@ -224,6 +229,55 @@ Usage
 Just include `noosfero` in your node's `run_list`, the below configuration is an example:
 ```json
 {
+  "rvm": {
+    "user_installs": [
+      {
+        "user": "noosfero",
+        "rubies": [ "ree" ],
+        "default_ruby": "ree",
+        "gems": {
+          "ree@noosfero": []
+        }
+      }
+    ]
+  },
+
+  "postgresql": {
+    "version": "9.3",
+    "password": {
+      // needed for chef-solo
+      "postgres": "iqHDDo1o"
+    },
+  },
+
+  "memcached": {
+    "memory": 128,
+    "listen": "127.0.0.1"
+  },
+
+  "varnish": {
+    "version": "2.1",
+    "listen_address": "0.0.0.0",
+    "listen_port": 80,
+    "storage": "file",
+    "storage_size": "1G",
+    "vcl_cookbook": "noosfero"
+  },
+
+  "nginx": {
+    "listen_ports": [81],
+    "keepalive_timeout": 20,
+    "default_site_enabled": false
+  },
+
+  "apache": {
+    "version": "2.4",
+    "listen_addresses": ["127.0.0.1"],
+    "listen_ports": [82],
+    "keepalivetimeout": 20,
+    "keepaliverequests": 1000
+  },
+
   "noosfero": {
     "service_name": "noosfero",
     "path": "/home/braulio/escambo.org.br",
@@ -234,15 +288,15 @@ Just include `noosfero` in your node's `run_list`, the below configuration is an
     "git_revision": "master",
 
     "dependencies_with": "bundler",
-    "rvm_load": "ree@cirandas",
+    "rvm_load": "ree@noosfero",
 
     "server_name": "escambo.org.br",
     "custom_domains": [
       "escambo.org"
     ],
 
-    "proxy_server": "nginx",
     "server": {
+      "proxy": "nginx",
       "backend": "unicorn",
       "workers": 1
     },
@@ -278,6 +332,10 @@ Just include `noosfero` in your node's `run_list`, the below configuration is an
   ]
 }
 ```
+
+TODO
+----
+- Support others besides RVM (rbenv), by replacing rvm_shell with a generic noosfero_shell
 
 Contributing
 ------------

@@ -32,6 +32,9 @@ SCRIPTNAME=/etc/init.d/$NAME
 NOOSFERO_DIR=<%= @code_path %>
 NOOSFERO_USER=<%= @user %>
 
+PIDFILE="$NOOSFERO_DIR/tmp/pids/delayed_job.pid"
+
+. /lib/lsb/init-functions
 # Load the VERBOSE setting and other rcS variables
 . /lib/init/vars.sh
 
@@ -113,19 +116,23 @@ do_restart() {
   fi
 }
 
+do_status() {
+	running
+}
+
 running(){
-  pgrep -u <%= @user %> -f 'delayed_job' > /dev/null
+	status_of_proc -p $PIDFILE "noosfero" "$NAME"
 }
 
 case "$1" in
-  start|stop|restart|setup)
+  start|stop|restart|status)
     do_$1
     ;;
   force-reload)
     do_restart
     ;;
   *)
-    echo "Usage: $SCRIPTNAME {start|stop|restart|force-reload|setup}" >&2
+    echo "Usage: $SCRIPTNAME {start|stop|restart|force-reload|status}" >&2
     exit 3
     ;;
 esac
