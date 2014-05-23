@@ -5,228 +5,87 @@ Install/configure Noosfero social-economic network (see http://noosfero.org)
 Attributes
 ----------
 #### noosfero::default
+
 The default recipe runs others recipes according to the settings
-<table>
-  <tr>
-    <th>Attribute</th>
-    <th>Description</th>
-    <th>Default</th>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:service_name]</tt></td>
-    <td>The Noosfero's service name, which define the init.d script name and paths</td>
-    <td><tt>"noosfero"</tt></td>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:rails_env]</tt></td>
-    <td>The Rails environment to be used</td>
-    <td><tt>"production"</tt></td>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:rvm_load]</tt></td>
-    <td>The ruby string to be load (e.g. "ree@noosfero")</td>
-    <td><tt>"system"</tt></td>
-  </tr>
-</table>
+
+| Attribute | Description | Default |
+| --------  | --------    | ------- |
+| <tt>node[:noosfero][:service_name]</tt>  | The Noosfero's service name, which define the init.d script name and paths | <tt>"noosfero"</tt> |
+| <tt>node[:noosfero][:rails_env]</tt> | The Rails environment to be used | <tt>"production"</tt> |
+| <tt>node[:noosfero][:rvm_load]</tt> | The ruby string to be load (e.g. "ree@noosfero") | <tt>"system"</tt> |
+
 #### noosfero::install
-<table>
-  <tr>
-    <th>Attribute</th>
-    <th>Description</th>
-    <th>Default</th>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:install_from]</tt></td>
-    <td>What is used to install noosfero: "git" (default) to fetch code from git and "package" to install noosfero from debian repository</td>
-    <td><tt>"git"</tt></td>
-  </tr>
-</table>
+
+| Attribute | Description | Default |
+| --------  | --------    | ------- |
+| <tt>node[:noosfero][:install_from]</tt> | What is used to install noosfero: "git" (default) to fetch code from git and "package" to install noosfero from debian repository | <tt>"git"</tt> |
 
 #### noosfero::git\_install (on install\_from == "git")
-<table>
-  <tr>
-    <th>Attribute</th>
-    <th>Description</th>
-    <th>Default</th>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:user]</tt></td>
-    <td>The user to create and to run noosfero</td>
-    <td><tt>default[:noosfero][:service_name]</tt></td>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:group]</tt></td>
-    <td>The group to create and to run noosfero</td>
-    <td><tt>default[:noosfero][:service_name]</tt></td>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:git_url]</tt></td>
-    <td>The git repo containing Noosfero to be used</td>
-    <td><tt>https://gitlab.com/noosfero/noosfero.git</tt></td>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:git_revision]</tt></td>
-    <td>The branch, tag or commit to be used</td>
-    <td><tt>"stable"</tt></td>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:upgrade_script]</tt></td>
-    <td>A script to be run on git sync</td>
-    <td><tt>''</tt></td>
-  </tr>
-  <tr>
-    <th colspan=3>Paths</th>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:path]</tt></td>
-    <td>Set the path to clone the git repo to be the base path for code, log, tmp and others noosfero directories</td>
-    <td><tt>nil</tt> (use default system dirs, see below)</td>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:code_path]</tt></td>
-    <td>Overwrite the code's path</td>
-    <td>
-      <tt>node[:noosfero][:path]</tt> (with node[:noosfero][:path])
-      <br>
-      <tt>"/usr/share/#{service_name}"</tt> (without node[:noosfero][:path])
-    </td>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:data_path]</tt></td>
-    <td>Overwrite the data path</td>
-    <td>
-      <tt>node[:noosfero][:path]</tt> (with node[:noosfero][:path])
-      <br>
-      <tt>"/var/lib/#{service_name}"</tt> (without node[:noosfero][:path])
-    </td>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:config_path]</tt></td>
-    <td>Overwrite the config path</td>
-    <td>
-      <tt>"#{node[:noosfero][:path]}/config"</tt> (with node[:noosfero][:path])
-      <br>
-      <tt>"/etc/#{service_name}"</tt> (without node[:noosfero][:path])
-    </td>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:log_path]</tt></td>
-    <td>Overwrite the log path</td>
-    <td>
-      <tt>"#{node[:noosfero][:path]}/log"</tt> (with node[:noosfero][:path])
-      <br>
-      <tt>"/var/log/#{service_name}"</tt> (without node[:noosfero][:path])
-    </td>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:run_path]</tt></td>
-    <td>Overwrite the run path</td>
-    <td>
-      <tt>"#{node[:noosfero][:path]}/run"</tt> (with node[:noosfero][:path])
-      <br>
-      <tt>"/var/run/#{service_name}"</tt> (without node[:noosfero][:path])
-    </td>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:tmp_path]</tt></td>
-    <td>Overwrite the tmp path</td>
-    <td>
-      <tt>"#{node[:noosfero][:path]}/tmp"</tt> (with node[:noosfero][:path])
-      <br>
-      <tt>"/var/tmp/#{service_name}"</tt> (without node[:noosfero][:path])
-    </td>
-  </tr>
-</table>
+
+| Attribute | Description | Default |
+| --------  | --------    | ------- |
+| <tt>node[:noosfero][:user]</tt> | The user to create and to run noosfero | <tt>default[:noosfero][:service_name]</tt> |
+| <tt>node[:noosfero][:group]</tt> | The group to create and to run noosfero | tt>default[:noosfero][:service_name]</tt> |
+| <tt>node[:noosfero][:git_url]</tt> | The git repo containing Noosfero to be used | tt>https://gitlab.com/noosfero/noosfero.git</tt> |
+| <tt>node[:noosfero][:git_revision]</tt> | The branch, tag or commit to be used | <tt>"stable"</tt> |
+| <tt>node[:noosfero][:upgrade_script]</tt> | A script to be run on git sync | <tt>''</tt> |
+|  Paths  |
+| <tt>node[:noosfero][:path]</tt> | Set the path to clone the git repo to be the base path for code, log, tmp and others noosfero directories | <tt>nil</tt> (use default system dirs, see below) |
+| <tt>node[:noosfero][:code_path]</tt> | Overwrite the code's path | <tt>node[:noosfero][:path]</tt> (with node[:noosfero][:path]) or <tt>"/usr/share/#{service_name}"</tt> (without node[:noosfero][:path]) |
+| <tt>node[:noosfero][:data_path]</tt> | Overwrite the data path | <tt>node[:noosfero][:path]</tt> (with node[:noosfero][:path]) or <tt>"/var/lib/#{service_name}"</tt> (without node[:noosfero][:path]) |
+| <tt>node[:noosfero][:config_path]</tt> | Overwrite the config path | <tt>"#{node[:noosfero][:path]}/config"</tt> (with node[:noosfero][:path]) or <tt>"/etc/#{service_name}"</tt> (without node[:noosfero][:path]) |
+| <tt>node[:noosfero][:log_path]</tt> | Overwrite the log path | <tt>"#{node[:noosfero][:path]}/log"</tt> (with node[:noosfero][:path]) or <tt>"/var/log/#{service_name}"</tt> (without node[:noosfero][:path]) |
+| <tt>node[:noosfero][:run_path]</tt> | Overwrite the run path | <tt>"#{node[:noosfero][:path]}/run"</tt> (with node[:noosfero][:path]) or <tt>"/var/run/#{service_name}"</tt> (without node[:noosfero][:path]) |
+| <tt>node[:noosfero][:tmp_path]</tt> | Overwrite the tmp path | <tt>"#{node[:noosfero][:path]}/tmp"</tt> (with node[:noosfero][:path]) or <tt>"/var/tmp/#{service_name}"</tt> (without node[:noosfero][:path]) |
+
 
 #### noosfero::package\_install (on install\_from == "package")
+
 Install noosfero using the Colivre's apt repository
-<table>
-  <tr>
-    <th>Attribute</th>
-    <th>Description</th>
-    <th>Default</th>
-  </tr>
-</table>
+
+| Attribute | Description | Default |
+| --------  | --------    | ------- |
+|  |  |  |
+|  |  |  |
+|  |  |  |
+|  |  |  |
+|  |  |  |
 
 #### noosfero::dependencies (on install\_from == "git")
-<table>
-  <tr>
-    <th>Attribute</th>
-    <th>Description</th>
-    <th>Default</th>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:dependencies_with]</tt></td>
-    <td>How to install dependencies: "quick_start", "bundler" or "packages" </td>
-    <td> <tt>"quick_start"</tt> </td>
-  </tr>
-</table>
+
+| Attribute | Description | Default |
+| --------  | --------    | ------- |
+| <tt>node[:noosfero][:dependencies_with]</tt> | How to install dependencies: "quick_start", "bundler" or "packages" | <tt>"quick_start"</tt> |
+
 
 #### noosfero::database (on install\_from == "git")
+
 Generate Rails' database.yml
-<table>
-  <tr>
-    <th>Attribute</th>
-    <th>Description</th>
-    <th>Default</th>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:db][:name]</tt></td>
-    <td>Database name</td>
-    <td> <tt>node[:noosfero][:service_name]</tt> </td>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:db][:hostname]</tt></td>
-    <td>Database host</td>
-    <td> <tt>"localhost"</tt> </td>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:db][:port]</tt></td>
-    <td>Database port</td>
-    <td> <tt>""</tt> </td>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:db][:username]</tt></td>
-    <td>Database username</td>
-    <td> <tt>node[:noosfero][:user]</tt> </td>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:db][:password]</tt></td>
-    <td>Database password</td>
-    <td> <tt>""</tt> </td>
-  </tr>
-</table>
+
+| Attribute | Description | Default |
+| --------  | --------    | ------- |
+| <tt>node[:noosfero][:db][:name]</tt> | Database name | <tt>node[:noosfero][:service_name]</tt> |
+| <tt>node[:noosfero][:db][:hostname]</tt> | Database port | <tt>""</tt> |
+| <tt>node[:noosfero][:db][:port]</tt> | Database port | <tt>""</tt> |
+| <tt>node[:noosfero][:db][:username]</tt> | Database username | <tt>node[:noosfero][:user]</tt> |
+| <tt>node[:noosfero][:db][:password]</tt> | Database password | <tt>""</tt> |
 
 #### noosfero::environment (on install\_from == "git")
-Create, if there isn't any default yet, a default Noosfero Environment
-<table>
-  <tr>
-    <th>Attribute</th>
-    <th>Description</th>
-    <th>Default</th>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:environment]</tt></td>
-    <td>A hash with the config. If nil, skip environment check and creation</td>
-    <td> <tt>nil</tt> </td>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:environment][:name]</tt></td>
-    <td>The name of the environment. This is used in all pages' &lttitle&gt</td>
-    <td> <tt>-</tt> </td>
-  </tr>
-  <tr>
-    <td><tt>node[:noosfero][:environment][:domain]</tt></td>
-    <td>The name of the environment. This is used in all pages' &lttitle&gt</td>
-    <td> <tt>-</tt> </td>
-  </tr>
-</table>
 
+Create, if there isn't any default yet, a default Noosfero Environment
+
+| Attribute | Description | Default |
+| --------  | --------    | ------- |
+| <tt>node[:noosfero][:environment]</tt> | A hash with the config. If nil, skip environment check and creation | <tt>nil</tt> |
+| <tt>node[:noosfero][:environment][:name]</tt> | The name of the environment. This is used in all pages' &lttitle&gt | <tt>-</tt> |
+| <tt>node[:noosfero][:environment][:domain]</tt> | The name of the environment. This is used in all pages' &lttitle&gt | <tt>-</tt> |
 
 Usage
 -----
 #### noosfero::default
+
 Just include `noosfero` in your node's `run_list`, the below configuration is an example:
+
 ```json
 {
   "rvm": {
@@ -347,4 +206,3 @@ Contributing
 6. Submit a Pull Request using Github
 
 After 3 consistent patches you become a commiter :)
-
