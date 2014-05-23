@@ -6,5 +6,6 @@ template "/etc/init.d/#{node[:noosfero][:service_name]}" do
   notifies :restart, "service[#{node[:noosfero][:service_name]}]"
 end
 service node[:noosfero][:service_name] do
+  supports ({ :restart => true, :reload => false, :status => true })
   action :enable
 end

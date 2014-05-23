@@ -75,12 +75,12 @@ do_start() {
   <% if @plugins.include? 'solr' %>
     noosfero_run RAILS_ENV=<%= @rails_env %> rake solr:start
   <% end %>
-    # actually start the service
-    main_script start
-    # FIXME: move to script/<%= @rails_env %>
   <% if @server['backend'] == 'unicorn' %>
+    # FIXME: move to script/<%= @rails_env %>
     noosfero_run bundle exec unicorn_rails -D -c config/unicorn.conf.rb -E <%= @rails_env %>
   <% end %>
+    # actually start the service
+    main_script start
   else
     echo 'Noosfero is already running, nothing to do...'
   fi
@@ -91,11 +91,11 @@ do_stop() {
   <% if @plugins.include? 'solr' %>
     noosfero_run RAILS_ENV=<%= @rails_env %> rake solr:stop
   <% end %>
-    main_script stop
-    # FIXME: move to script/<%= @rails_env %>
   <% if @server['backend'] == 'unicorn' %>
+    # FIXME: move to script/<%= @rails_env %>
     kill `cat $NOOSFERO_DIR/tmp/pids/unicorn.pid` 2>&1 > /dev/null
   <% end %>
+    main_script stop
   else
     echo 'Noosfero is already stopped, nothing to do...'
   fi
@@ -105,24 +105,23 @@ do_restart() {
   if ! running; then
     do_start
   else
-  <% if @plugins.include? 'solr' %>
-    noosfero_run RAILS_ENV=<%= @rails_env %> rake solr:stop
-  <% end %>
-    main_script restart
-    # FIXME: move to script/<%= @rails_env %>
+    # WARN: Solr doesn't need a restart
   <% if @server['backend'] == 'unicorn' %>
+    # FIXME: move to script/<%= @rails_env %>
     kill -USR2 `cat $NOOSFERO_DIR/tmp/pids/unicorn.pid` 2>&1 > /dev/null
   <% end %>
+    main_script restart
   fi
 }
 
 do_status() {
-	running
+  status_of_proc -p $PIDFILE "noosfero" "$NAME"
 }
 
 running(){
-	status_of_proc -p $PIDFILE "noosfero" "$NAME"
+  status_of_proc -p $PIDFILE "noosfero" "$NAME" 2>&1 > /dev/null
 }
+
 
 case "$1" in
   start|stop|restart|status)

@@ -14,7 +14,7 @@ rvm_shell "noosfero-enabled-selected-plugins" do
   only_if do
     cmd = Mixlib::ShellOut.new "sh -c 'cd #{node[:noosfero][:code_path]}/config/plugins && echo */'"
     overview = cmd.run_command
-    current_enabled_plugins = overview.stdout.split('/ ').sort
+    current_enabled_plugins = overview.stdout.split("\n").first.gsub('/', '').split(' ').sort
     plugins != current_enabled_plugins
   end
 end
