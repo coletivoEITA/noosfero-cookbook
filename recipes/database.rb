@@ -1,5 +1,3 @@
-include_recipe 'postgresql'
-
 if Chef::Config[:solo]
   if node[:noosfero][:db][:password].nil?
     Chef::Application.fatal! "The db password is necessary when using Chef::Solo"
@@ -9,6 +7,7 @@ else
   node.save
 end
 
+include_recipe 'postgresql'
 postgresql_connection = {
   :host => '127.0.0.1',
   :port => node[:postgresql][:config][:port],

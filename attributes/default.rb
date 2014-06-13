@@ -50,7 +50,7 @@ default[:noosfero][:server][:proxy] = 'apache'
 default[:noosfero][:server][:backend] = 'thin'
 default[:noosfero][:server][:workers] = 4
 default[:noosfero][:server][:port] = 50000
-default[:noosfero][:server][:timeout] = 30
+default[:noosfero][:server][:timeout] = if default[:noosfero][:server][:backend] then 30 elsif default[:noosfero][:server][:proxy] == 'nginx' then 60 else 1200 end
 
 default[:noosfero][:server][:proxy_port] = case node[:noosfero][:server][:proxy]
                                            when 'apache' then node[:apache][:listen_ports].first
