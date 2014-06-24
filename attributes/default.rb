@@ -46,7 +46,7 @@ default[:varnish][:version] = '2.1'
 default[:varnish][:vcl_cookbook] = 'noosfero'
 
 default[:noosfero][:server] = {}
-default[:noosfero][:server][:proxy] = 'apache'
+default[:noosfero][:server][:proxy] = 'nginx'
 default[:noosfero][:server][:backend] = 'thin'
 default[:noosfero][:server][:workers] = 4
 default[:noosfero][:server][:port] = 50000
@@ -65,6 +65,10 @@ default[:noosfero][:db][:hostname] = 'localhost'
 default[:noosfero][:db][:port] = node[:postgresql][:config][:port]
 default[:noosfero][:db][:username] = node[:noosfero][:user]
 default[:noosfero][:db][:password] = nil
+
+default[:noosfero][:logrotate] = {}
+default[:noosfero][:logrotate][:rotate] = 100_000
+default[:noosfero][:logrotate][:frequency] = 'daily'
 
 default[:noosfero][:environment] = nil
 
