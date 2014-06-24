@@ -10,7 +10,7 @@ The default recipe runs others recipes according to the settings
 
 | Attribute | Description | Default |
 | --------  | --------    | ------- |
-| <tt>node[:noosfero][:service_name]</tt>  | The Noosfero's service name, which define the init.d script name and paths | <tt>"noosfero"</tt> |
+| <tt>node[:noosfero][:service_name]</tt>  | The Noosfero's service name, which defines the init.d script name and paths | <tt>"noosfero"</tt> |
 | <tt>node[:noosfero][:rails_env]</tt> | The Rails environment to be used | <tt>"production"</tt> |
 | <tt>node[:noosfero][:rvm_load]</tt> | The ruby string to be load (e.g. "ree@noosfero") | <tt>"system"</tt> |
 
@@ -46,17 +46,12 @@ Install noosfero using the Colivre's apt repository
 | Attribute | Description | Default |
 | --------  | --------    | ------- |
 |  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
 
 #### noosfero::dependencies (on install\_from == "git")
 
 | Attribute | Description | Default |
 | --------  | --------    | ------- |
 | <tt>node[:noosfero][:dependencies_with]</tt> | How to install dependencies: "quick_start", "bundler" or "packages" | <tt>"quick_start"</tt> |
-
 
 #### noosfero::database (on install\_from == "git")
 
@@ -65,24 +60,69 @@ Generate Rails' database.yml
 | Attribute | Description | Default |
 | --------  | --------    | ------- |
 | <tt>node[:noosfero][:db][:name]</tt> | Database name | <tt>node[:noosfero][:service_name]</tt> |
-| <tt>node[:noosfero][:db][:hostname]</tt> | Database port | <tt>""</tt> |
+| <tt>node[:noosfero][:db][:hostname]</tt> | Database hostname | <tt>"locahost"</tt> |
 | <tt>node[:noosfero][:db][:port]</tt> | Database port | <tt>""</tt> |
 | <tt>node[:noosfero][:db][:username]</tt> | Database username | <tt>node[:noosfero][:user]</tt> |
-| <tt>node[:noosfero][:db][:password]</tt> | Database password | <tt>""</tt> |
+| <tt>node[:noosfero][:db][:password]</tt> | Database password | <tt>nil</tt> |
+| <tt>node[:noosfero][:db][:create_from_dump]</tt> | Load speficied dump file after database creation (if it don't exist yet) | <tt>nil</tt> |
 
 #### noosfero::environment (on install\_from == "git")
 
-Create, if there isn't any default yet, a default Noosfero Environment
+Create, if there isn't any default yet, a default Noosfero Environment, after database creation.
 
 | Attribute | Description | Default |
 | --------  | --------    | ------- |
-| <tt>node[:noosfero][:environment]</tt> | A hash with the config. If nil, skip environment check and creation | <tt>nil</tt> |
+| <tt>node[:noosfero][:environment]</tt> | A hash with the config of the default environment. If nil, skip environment check and creation | <tt>nil</tt> |
 | <tt>node[:noosfero][:environment][:name]</tt> | The name of the environment. This is used in all pages' &lttitle&gt | <tt>-</tt> |
-| <tt>node[:noosfero][:environment][:domain]</tt> | The name of the environment. This is used in all pages' &lttitle&gt | <tt>-</tt> |
+| <tt>node[:noosfero][:environment][:domain]</tt> | The default domain associated with the environment. | <tt>-</tt> |
+| <tt>node[:noosfero][:environment][:default_language]</tt> | Set default language | <tt>-</tt> |
+
+#### noosfero::settings
+
+Write noosfero.yml settings file. Use key/value pairs from `node[:noosfero][:settings]` hash.
+
+#### noosfero::plugins
+
+Enable and configure plugins.
+
+| Attribute | Description | Default |
+| --------  | --------    | ------- |
+| <tt>node[:noosfero][:plugins]</tt> | An array of plugins to enable with script/noosfero-plugins | <tt>[]</tt> |
+| <tt>node[:noosfero][:plugins_settings]</tt> | Configure each plugin' settings | See <tt>attributes/default.rb</tt> |
+
+#### noosfero::server
+
+Configure proxy and backend (rails app) servers
+
+| Attribute | Description | Default |
+| --------  | --------    | ------- |
+| <tt>node[:noosfero][:server][:proxy]</tt> | Proxy server to use. Choose between nginx or apache | <tt>nginx</tt> |
+| <tt>node[:noosfero][:server][:backend]</tt> | Rails application server. Choose between unicorn and thin | <tt>thin</tt> |
+| <tt>node[:noosfero][:server][:workers]</tt> | Number of workers to start | <tt>4</tt> |
+| <tt>node[:noosfero][:server][:port]</tt> | Backend port | <tt>50000</tt> |
+| <tt>node[:noosfero][:server][:timeout]</tt> | Backend timeout | <tt>60</tt> if backend is nginx and <tt>1200</tt> if apache is used |
+| <tt>node[:noosfero][:server][:proxy_port]</tt> | Proxy port to listen | <tt>node[:nginx][:listen_ports].first</tt> or <tt>node[:apache][:listen_ports].first</tt> |
+
+#### noosfero::cache
+
+Configure cache options
+
+| Attribute | Description | Default |
+| --------  | --------    | ------- |
+| <tt>node[:noosfero][:cache][:server]</tt> | Cache server to use. Supports `varnish` or set to empty to disable | <tt>varnish</tt> |
+| <tt>node[:noosfero][:cache][:backend_port]</tt> | Backend port | <tt>node[:noosfero][:server][:proxy_port]</tt> |
+
+#### noosfero::logrotate
+
+Rotate logs
+
+| Attribute | Description | Default |
+| --------  | --------    | ------- |
+| <tt>node[:noosfero][:logrotate][:rotate]</tt> | Number of maximum rotated logs | <tt>100_000</tt> |
+| <tt>node[:noosfero][:logrotate][:frequency]</tt> | Frequency to rotate logs | <tt>daily</tt> |
 
 Usage
 -----
-#### noosfero::default
 
 Just include `noosfero` in your node's `run_list`, the below configuration is an example:
 

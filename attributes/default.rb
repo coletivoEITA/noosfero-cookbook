@@ -30,7 +30,7 @@ else
   default[:noosfero][:tmp_path] = "/var/tmp/#{service_name}"
 end
 
-default[:noosfero][:rvm_load] = "default"
+default[:noosfero][:rvm_load] = "system"
 default[:noosfero][:dependencies_with] = 'quick_start'
 
 case node[:platform_family]
@@ -40,37 +40,17 @@ when 'debian', 'ubuntu'
   default[:noosfero][:packages_for_quick_start] = %w[]
 end
 
-default[:noosfero][:cache] = {}
-default[:noosfero][:cache][:server] = 'varnish'
-default[:varnish][:version] = '2.1'
-default[:varnish][:vcl_cookbook] = 'noosfero'
-
-default[:noosfero][:server] = {}
-default[:noosfero][:server][:proxy] = 'nginx'
-default[:noosfero][:server][:backend] = 'thin'
-default[:noosfero][:server][:workers] = 4
-default[:noosfero][:server][:port] = 50000
-default[:noosfero][:server][:timeout] = if default[:noosfero][:server][:backend] then 30 elsif default[:noosfero][:server][:proxy] == 'nginx' then 60 else 1200 end
-
-default[:noosfero][:server][:proxy_port] = case node[:noosfero][:server][:proxy]
-                                           when 'apache' then node[:apache][:listen_ports].first
-                                           when 'nginx' then node[:nginx][:listen_ports].first
-                                           end
-default[:noosfero][:cache][:backend_port] = node[:noosfero][:server][:proxy_port]
-
 default[:noosfero][:db] = {}
-default[:noosfero][:db][:create_from_dump] = nil
 default[:noosfero][:db][:name] = service_name
 default[:noosfero][:db][:hostname] = 'localhost'
 default[:noosfero][:db][:port] = node[:postgresql][:config][:port]
 default[:noosfero][:db][:username] = node[:noosfero][:user]
 default[:noosfero][:db][:password] = nil
-
-default[:noosfero][:logrotate] = {}
-default[:noosfero][:logrotate][:rotate] = 100_000
-default[:noosfero][:logrotate][:frequency] = 'daily'
+default[:noosfero][:db][:create_from_dump] = nil
 
 default[:noosfero][:environment] = nil
+
+default[:noosfero][:settings] = {}
 
 default[:noosfero][:plugins] = []
 
@@ -80,4 +60,30 @@ default[:noosfero][:plugins_settings][:solr][:address] = "127.0.0.1"
 default[:noosfero][:plugins_settings][:solr][:port] = 8983
 default[:noosfero][:plugins_settings][:solr][:memory] = 128
 default[:noosfero][:plugins_settings][:solr][:timeout] = 0
+
+default[:noosfero][:server] = {}
+default[:noosfero][:server][:proxy] = 'nginx'
+default[:noosfero][:server][:backend] = 'thin'
+default[:noosfero][:server][:workers] = 4
+default[:noosfero][:server][:port] = 50000
+default[:noosfero][:server][:timeout] =
+  case node[:noosfero][:server][:backend]
+  when 'apache' then 1200
+  when 'nginx' then 60
+  end
+default[:noosfero][:server][:proxy_port] =
+  case node[:noosfero][:server][:proxy]
+  when 'apache' then node[:apache][:listen_ports].first
+  when 'nginx' then node[:nginx][:listen_ports].first
+  end
+
+default[:noosfero][:cache][:backend_port] = node[:noosfero][:server][:proxy_port]
+default[:noosfero][:cache] = {}
+default[:noosfero][:cache][:server] = 'varnish'
+default[:varnish][:version] = '2.1'
+default[:varnish][:vcl_cookbook] = 'noosfero'
+
+default[:noosfero][:logrotate] = {}
+default[:noosfero][:logrotate][:rotate] = 100_000
+default[:noosfero][:logrotate][:frequency] = 'daily'
 

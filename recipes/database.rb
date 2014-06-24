@@ -63,18 +63,5 @@ rvm_shell "noosfero-schema-load" do
   action :nothing # run by database creation
 end
 
-rvm_shell "noosfero-create-environment" do
-  user node[:noosfero][:user]; group node[:noosfero][:group]
-  cwd node[:noosfero][:code_path]
-  ruby_string node[:noosfero][:rvm_load]
-  code <<-EOH
-    RAILS_ENV=#{node[:noosfero][:rails_env]} script/runner '
-        e = Environment.create! :name => "#{node[:noosfero][:environment][:name]}"
-        e.domains.create! :name => "#{node[:noosfero][:environment][:domain]}", :is_default => true
-      end
-    '
-  EOH
-  action :nothing # run by database creation
-  not_if node[:noosfero][:environment].nil?
-end
+include_recipe 'noosfero::environment'
 
