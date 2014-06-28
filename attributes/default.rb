@@ -67,7 +67,7 @@ default[:noosfero][:server][:backend] = 'thin'
 default[:noosfero][:server][:workers] = 4
 default[:noosfero][:server][:port] = 50000
 default[:noosfero][:server][:timeout] =
-  case node[:noosfero][:server][:backend]
+  case node[:noosfero][:server][:proxy]
   when 'apache' then 1200
   when 'nginx' then 60
   end
@@ -76,6 +76,9 @@ default[:noosfero][:server][:proxy_port] =
   when 'apache' then node[:apache][:listen_ports].first
   when 'nginx' then node[:nginx][:listen_ports].first
   end
+
+default[:noosfero][:ssl] = {}
+default[:noosfero][:ssl][:enable] = false
 
 default[:noosfero][:cache][:backend_port] = node[:noosfero][:server][:proxy_port]
 default[:noosfero][:cache] = {}

@@ -1,50 +1,73 @@
 server {
-  listen <%= node[:nginx][:listen_ports].first %>;
+  listen <%= @server[:proxy_port] %>;
+  <% if @ssl[:enable] %>
+  listen 443 ssl;
+  <% end %>
+
   server_name www.<%= @server_name %>;
   rewrite ^ $scheme://<%= @server_name %>$request_uri?;
 }
 
 <% @custom_domains.each do |domain| %>
 server {
-  listen <%= node[:nginx][:listen_ports].first %>;
+  listen <%= @server[:proxy_port] %>;
+  <% if @ssl[:enable] %>
+  listen 443 ssl;
+  <% end %>
+
   server_name www.<%= domain %>;
   rewrite ^ $scheme://<%= domain %>$request_uri?;
 }
 <% end %>
 
 upstream <%= @service_name %> {
-  <% if @server['backend'] == 'unicorn' %>
+  <% if @server[:backend] == 'unicorn' %>
   server unix:<%= @run_path %>/unicorn.sock;
-  <% elsif @server['backend'] == 'thin' %>
-  <% @server['workers'].times.each do |i| %>
+  <% elsif @server[:backend] == 'thin' %>
+  <% @server[:workers].times.each do |i| %>
   server http://127.0.0.1:<%= @server['port'].to_i + i %>;
   <% end %>
   <% end %>
 }
 
-server {
-  listen <%= node[:nginx][:listen_ports].first %>;
-  server_name <%= @server_name %> <%= @custom_domains.join ' ' %>;
-  root <%= @code_path %>/public;
+http {
+  proxy_cache_path <%= @tmp_path %>/nginx.cache levels=1:2 keys_zone=<%= @service_name %>:100m inactive=30d max_size=200m;
 
-  access_log <%= @log_path %>/access.log;
-  error_log <%= @log_path %>/error.log;
+  server {
+    listen <%= @server[:proxy_port] %>;
+    <% if @ssl[:enable] %>
+    listen 443 ssl;
+    <% end %>
 
-  location / {
-    try_files index.html $uri @proxy;
-  }
+    server_name <%= @server_name %> <%= @custom_domains.join ' ' %>;
+    root <%= @code_path %>/public;
 
-  location @proxy {
-  <% if @server['backend'] == 'unicorn' %>
-    proxy_buffers               4 256k;
-    proxy_buffer_size           256k;
-    proxy_busy_buffers_size     256k;
-    proxy_temp_file_write_size  256k;
-  <% end %>
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $remote_addr;
-    proxy_set_header Host $host;
-    proxy_pass http://<%= @service_name %>;
+    <% if @ssl[:enable] %>
+    ssl_certificate <%= @ssl[:certificate] %>;
+    ssl_certificate_key <%= @ssl[:certificate_key] %>;
+    <% end %>
+
+    access_log <%= @log_path %>/access.log;
+    error_log <%= @log_path %>/error.log;
+
+    location / {
+      expires modified epoch;
+      try_files index.html $uri @proxy;
+    }
+
+    location @proxy {
+    <% if @server['backend'] == 'unicorn' %>
+      proxy_buffers               4 256k;
+      proxy_buffer_size           256k;
+      proxy_busy_buffers_size     256k;
+      proxy_temp_file_write_size  256k;
+    <% end %>
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $remote_addr;
+      proxy_set_header Host $host;
+      proxy_pass http://<%= @service_name %>;
+      proxy_cache <%= @service_name %>
+      proxy_cache_valid 200 30d;
+    }
   }
 }
-

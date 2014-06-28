@@ -10,7 +10,7 @@
 </VirtualHost>
 <% end %>
 
-<VirtualHost *:*>
+<VirtualHost *:<%= @server[:proxy_port] %>>
   ServerName <%= @server_name %>
   <% @custom_domains.each do |domain| %>
   ServerAlias <%= domain %>
@@ -57,3 +57,24 @@
 
 </VirtualHost>
 
+<% if @ssl[:enable] %>
+<VirtualHost *:443>
+  ServerName <%= @server_name %>
+  <% @custom_domains.each do |domain| %>
+  ServerAlias <%= domain %>
+  <% end %>
+
+  SSLEngine on
+  SSLProxyEngine On
+  SSLCertificateFile <%= @ssl[:certificate] %>;
+  SSLCertificateKeyFile <%= @ssl[:certificate_key] %>;
+  SSLCertificateChainFile <%= @ssl[:certificate_chain] %>;
+  SSLVerifyClient None
+
+  RewriteEngine On
+  ProxyPreserveHost On
+  # http proxy
+  RewriteRule ^.*$ http://127.0.0.1:<% @server[:proxy_port] %>%{REQUEST_URI} [P,QSA,L]
+
+</VirtualHost>
+<% end %>
