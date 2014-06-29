@@ -41,5 +41,6 @@ rvm_shell "noosfero-upgrade" do
     #{node[:noosfero][:upgrade_script]}
   EOH
   notifies :run, 'rvm_shell[noosfero-bundle-install]' if node[:noosfero][:dependencies_with] == 'bundler'
+  notifies :restart, "service[#{node[:noosfero][:service_name]}]"
   action :nothing
 end
