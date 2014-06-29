@@ -60,7 +60,8 @@ rvm_shell "noosfero-schema-load" do
   cwd node[:noosfero][:code_path]
   ruby_string node[:noosfero][:rvm_load]
   code <<-EOH
-    RAILS_ENV=#{node[:noosfero][:rails_env]} rake db:schema:load
+    RAILS_ENV=#{node[:noosfero][:rails_env]}
+    rake db:schema:load
   EOH
   action :nothing # run by database creation
 end
