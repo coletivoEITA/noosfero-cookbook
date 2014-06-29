@@ -30,44 +30,46 @@ upstream <%= @service_name %> {
   <% end %>
 }
 
-http {
-  proxy_cache_path <%= @tmp_path %>/nginx.cache levels=1:2 keys_zone=<%= @service_name %>:100m inactive=30d max_size=200m;
+server {
+  listen <%= @server[:proxy_port] %>;
+  <% if @ssl[:enable] %>
+  listen 443 <%= 'default_server' if @ssl[:default] %> ssl;
+  <% end %>
 
-  server {
-    listen <%= @server[:proxy_port] %>;
-    <% if @ssl[:enable] %>
-    listen 443 ssl;
-    <% end %>
+  server_name <%= @server_name %> <%= @custom_domains.join ' ' %>;
+  root <%= @code_path %>/public;
 
-    server_name <%= @server_name %> <%= @custom_domains.join ' ' %>;
-    root <%= @code_path %>/public;
+  <% if @ssl[:enable] %>
+  ssl_certificate <%= @ssl[:certificate] %>;
+  ssl_certificate_key <%= @ssl[:certificate_key] %>;
+  <% end %>
 
-    <% if @ssl[:enable] %>
-    ssl_certificate <%= @ssl[:certificate] %>;
-    ssl_certificate_key <%= @ssl[:certificate_key] %>;
-    <% end %>
+  access_log <%= @log_path %>/access.log;
+  error_log <%= @log_path %>/error.log;
 
-    access_log <%= @log_path %>/access.log;
-    error_log <%= @log_path %>/error.log;
+  location / {
+    expires modified <%= @cache[:expires] %>;
+    try_files index.html $uri @proxy;
+  }
 
-    location / {
-      expires modified epoch;
-      try_files index.html $uri @proxy;
-    }
+  location @proxy {
+  <% if @server['backend'] == 'unicorn' %>
+    proxy_buffers               4 256k;
+    proxy_buffer_size           256k;
+    proxy_busy_buffers_size     256k;
+    proxy_temp_file_write_size  256k;
+  <% end %>
 
-    location @proxy {
-    <% if @server['backend'] == 'unicorn' %>
-      proxy_buffers               4 256k;
-      proxy_buffer_size           256k;
-      proxy_busy_buffers_size     256k;
-      proxy_temp_file_write_size  256k;
-    <% end %>
-      proxy_set_header X-Real-IP $remote_addr;
-      proxy_set_header X-Forwarded-For $remote_addr;
-      proxy_set_header Host $host;
-      proxy_pass http://<%= @service_name %>;
-      proxy_cache <%= @service_name %>
-      proxy_cache_valid 200 30d;
-    }
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Host $host;
+    proxy_pass http://<%= @service_name %>;
+
+    expires modified <%= @cache[:expires] %>;
+  <% if @cache[:server] == 'proxy' %>
+    proxy_cache <%= @cache[:key_zone] %>;
+    proxy_cache_valid 200 <%= @cache[:expires] %>;
+  <% end %>
   }
 }

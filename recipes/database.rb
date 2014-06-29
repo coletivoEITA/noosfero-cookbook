@@ -8,6 +8,8 @@ else
 end
 
 include_recipe 'postgresql'
+package 'libpq-dev'
+chef_gem 'pg'
 postgresql_connection = {
   :host => '127.0.0.1',
   :port => node[:postgresql][:config][:port],

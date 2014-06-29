@@ -1,4 +1,4 @@
-#include_recipe 'rvm'
+include_recipe 'rvm'
 
 dependencies_with = node[:noosfero][:dependencies_with]
 

@@ -79,14 +79,22 @@ default[:noosfero][:server][:proxy_port] =
 
 default[:noosfero][:ssl] = {}
 default[:noosfero][:ssl][:enable] = false
+default[:noosfero][:ssl][:default] = true
 
 default[:noosfero][:cache][:backend_port] = node[:noosfero][:server][:proxy_port]
 default[:noosfero][:cache] = {}
 default[:noosfero][:cache][:server] = 'varnish'
+default[:noosfero][:cache][:expires] = '30d'
+default[:noosfero][:cache][:key_zone] = 'main'
+
 default[:varnish][:version] = '2.1'
 default[:varnish][:vcl_cookbook] = 'noosfero'
 
 default[:noosfero][:logrotate] = {}
 default[:noosfero][:logrotate][:rotate] = 100_000
 default[:noosfero][:logrotate][:frequency] = 'daily'
+
+default[:noosfero][:backup] = {}
+default[:noosfero][:backup][:to] = {}
+default[:noosfero][:backup][:to][:port] = 22
 
