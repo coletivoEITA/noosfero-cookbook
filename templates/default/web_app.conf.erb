@@ -28,6 +28,11 @@
   ProxyPreserveHost On
   RewriteEngine On
 
+  <% if not @server[:block_bots].empty? %>
+  RewriteCond %{HTTP_USER_AGENT} (?:<%= @server[:block_bots].join '|' %>) [NC]
+  RewriteRule ^.*$ - [F]
+  <% end %>
+
   # Rewrite index to check for static index.html
   RewriteRule ^/$ /index.html [QSA]
 

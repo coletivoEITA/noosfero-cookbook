@@ -76,10 +76,12 @@ default[:noosfero][:server][:proxy_port] =
   when 'apache' then node[:apache][:listen_ports].first
   when 'nginx' then node[:nginx][:listen_ports].first
   end
+default[:noosfero][:server][:block_bots] = ['msnbot', 'Purebot', 'Baiduspider', 'Lipperhey', 'Mail.Ru', 'scrapbot']
 
 default[:noosfero][:ssl] = {}
 default[:noosfero][:ssl][:enable] = false
 default[:noosfero][:ssl][:default] = true
+default[:noosfero][:ssl][:redirect_http] = true
 
 default[:noosfero][:cache][:backend_port] = node[:noosfero][:server][:proxy_port]
 default[:noosfero][:cache] = {}

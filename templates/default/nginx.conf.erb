@@ -47,7 +47,19 @@ server {
   access_log <%= @log_path %>/access.log;
   error_log <%= @log_path %>/error.log;
 
+  <% if @ssl[:redirect_http] %>
+  if ( $scheme = http ) {
+    rewrite ^ https://$host$uri last;
+  }
+  <% end %>
+
   location / {
+  <% if not @server[:block_bots].empty? %>
+    if ($http_user_agent ~ (<%= @server[:block_bots].join '|' %>) ) {
+      return 403;
+    }
+  <% end %>
+
     expires modified <%= @cache[:expires] %>;
     try_files index.html $uri @proxy;
   }
