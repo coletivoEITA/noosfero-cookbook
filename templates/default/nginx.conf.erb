@@ -47,7 +47,7 @@ server {
   access_log <%= @log_path %>/access.log;
   error_log <%= @log_path %>/error.log;
 
-  <% if @ssl[:redirect_http] %>
+  <% if @ssl[:enable] and @ssl[:redirect_http] %>
   if ( $scheme = http ) {
     rewrite ^ https://$host$uri last;
   }
