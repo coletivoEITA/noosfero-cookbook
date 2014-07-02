@@ -61,11 +61,28 @@ default[:noosfero][:plugins_settings][:solr][:port] = 8983
 default[:noosfero][:plugins_settings][:solr][:memory] = 128
 default[:noosfero][:plugins_settings][:solr][:timeout] = 0
 
+default[:varnish][:vcl_cookbook] = 'noosfero'
+default[:noosfero][:cache] = {}
+default[:noosfero][:cache][:server] = 'varnish'
+default[:noosfero][:cache][:backend_port] = node[:noosfero][:server][:proxy_port]
+default[:noosfero][:cache][:address] =
+  case node[:noosfero][:cache][:server]
+  when 'varnish' then node[:varnish][:listen_address]
+  else '127.0.0.1'
+  end
+default[:noosfero][:cache][:port] =
+  case node[:noosfero][:cache][:server]
+  when 'varnish' then node[:varnish][:listen_port]
+  when 'proxy' then node[:noosfero][:server][:proxy_port]
+  end
+default[:noosfero][:cache][:key_zone] = 'main'
+
 default[:noosfero][:server] = {}
 default[:noosfero][:server][:proxy] = 'nginx'
 default[:noosfero][:server][:backend] = 'thin'
 default[:noosfero][:server][:workers] = 4
 default[:noosfero][:server][:port] = 50000
+default[:noosfero][:server][:proxy_to_cache] = false
 default[:noosfero][:server][:timeout] =
   case node[:noosfero][:server][:proxy]
   when 'apache' then 1200
@@ -76,21 +93,13 @@ default[:noosfero][:server][:proxy_port] =
   when 'apache' then node[:apache][:listen_ports].first
   when 'nginx' then node[:nginx][:listen_ports].first
   end
+default[:noosfero][:server][:proxy_backend_port] = if node[:noosfero][:server][:proxy_to_cache] then node[:noosfero][:cache][:backend_port] else node[:noosfero][:server][:proxy_port] end
 default[:noosfero][:server][:block_bots] = ['msnbot', 'Purebot', 'Baiduspider', 'Lipperhey', 'Mail.Ru', 'scrapbot']
 
 default[:noosfero][:ssl] = {}
 default[:noosfero][:ssl][:enable] = false
 default[:noosfero][:ssl][:default] = true
 default[:noosfero][:ssl][:redirect_http] = true
-
-default[:noosfero][:cache][:backend_port] = node[:noosfero][:server][:proxy_port]
-default[:noosfero][:cache] = {}
-default[:noosfero][:cache][:server] = 'varnish'
-default[:noosfero][:cache][:expires] = '30d'
-default[:noosfero][:cache][:key_zone] = 'main'
-
-default[:varnish][:version] = '2.1'
-default[:varnish][:vcl_cookbook] = 'noosfero'
 
 default[:noosfero][:logrotate] = {}
 default[:noosfero][:logrotate][:rotate] = 100_000

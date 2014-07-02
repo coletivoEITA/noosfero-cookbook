@@ -32,11 +32,15 @@ upstream <%= @service_name %> {
 
 server {
   listen <%= @server[:proxy_port] %>;
+  <% if @server[:proxy_to_cache] %>
+  listen <%= @server[:proxy_backend_port] %>;
+  <% end %>
   <% if @ssl[:enable] %>
   listen 443 <%= 'default_server' if @ssl[:default] %> ssl;
   <% end %>
 
   server_name <%= @server_name %> <%= @custom_domains.join ' ' %>;
+  port_in_redirect off;
   root <%= @code_path %>/public;
 
   <% if @ssl[:enable] %>
@@ -60,7 +64,17 @@ server {
     }
   <% end %>
 
-    expires modified <%= @cache[:expires] %>;
+  <% if @server[:proxy_to_cache] %>
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_redirect off;
+    if ( $server_port = <%= @server[:proxy_port] %> ) {
+      proxy_pass http://<%= @cache[:address] %>:<%= @cache[:port] %>;
+    }
+  <% end %>
+
     try_files index.html $uri @proxy;
   }
 
@@ -78,7 +92,6 @@ server {
     proxy_set_header Host $host;
     proxy_pass http://<%= @service_name %>;
 
-    expires modified <%= @cache[:expires] %>;
   <% if @cache[:server] == 'proxy' %>
     proxy_cache <%= @cache[:key_zone] %>;
     proxy_cache_valid 200 <%= @cache[:expires] %>;
