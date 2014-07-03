@@ -33,7 +33,7 @@ upstream <%= @service_name %> {
 server {
   listen <%= @server[:proxy_port] %>;
   <% if @server[:proxy_to_cache] %>
-  listen <%= @server[:proxy_backend_port] %>;
+  listen 127.0.0.1:<%= @server[:proxy_backend_port] %>;
   <% end %>
   <% if @ssl[:enable] %>
   listen 443 <%= 'default_server' if @ssl[:default] %> ssl;

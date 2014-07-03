@@ -77,12 +77,17 @@ default[:noosfero][:cache][:port] =
   end
 default[:noosfero][:cache][:key_zone] = 'main'
 
+default[:noosfero][:ssl] = {}
+default[:noosfero][:ssl][:enable] = false
+default[:noosfero][:ssl][:default] = true
+default[:noosfero][:ssl][:redirect_http] = true
+
 default[:noosfero][:server] = {}
 default[:noosfero][:server][:proxy] = 'nginx'
 default[:noosfero][:server][:backend] = 'thin'
 default[:noosfero][:server][:workers] = 4
 default[:noosfero][:server][:port] = 50000
-default[:noosfero][:server][:proxy_to_cache] = false
+default[:noosfero][:server][:proxy_to_cache] = node[:noosfero][:ssl][:enable] and node[:noosfero][:cache][:server] == 'varnish'
 default[:noosfero][:server][:timeout] =
   case node[:noosfero][:server][:proxy]
   when 'apache' then 1200
@@ -93,13 +98,13 @@ default[:noosfero][:server][:proxy_port] =
   when 'apache' then node[:apache][:listen_ports].first
   when 'nginx' then node[:nginx][:listen_ports].first
   end
-default[:noosfero][:server][:proxy_backend_port] = if node[:noosfero][:server][:proxy_to_cache] then node[:noosfero][:cache][:backend_port] else node[:noosfero][:server][:proxy_port] end
+default[:noosfero][:server][:proxy_backend_port] =
+  if node[:noosfero][:server][:proxy_to_cache]
+    node[:noosfero][:cache][:backend_port] || (node[:noosfero][:server][:proxy_port].to_i + 1)
+  else
+    node[:noosfero][:server][:proxy_port]
+  end
 default[:noosfero][:server][:block_bots] = ['msnbot', 'Purebot', 'Baiduspider', 'Lipperhey', 'Mail.Ru', 'scrapbot']
-
-default[:noosfero][:ssl] = {}
-default[:noosfero][:ssl][:enable] = false
-default[:noosfero][:ssl][:default] = true
-default[:noosfero][:ssl][:redirect_http] = true
 
 default[:noosfero][:logrotate] = {}
 default[:noosfero][:logrotate][:rotate] = 100_000
