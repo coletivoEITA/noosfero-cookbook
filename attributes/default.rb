@@ -89,9 +89,9 @@ default[:noosfero][:server][:workers] = 4
 default[:noosfero][:server][:port] = 50000
 default[:noosfero][:server][:proxy_to_cache] = node[:noosfero][:ssl][:enable] and node[:noosfero][:cache][:server] == 'varnish'
 default[:noosfero][:server][:timeout] =
-  case node[:noosfero][:server][:proxy]
-  when 'apache' then 1200
-  when 'nginx' then 60
+  case node[:noosfero][:server][:backend]
+  when 'thin' then 30
+  when 'unicorn' then 1200
   end
 default[:noosfero][:server][:proxy_port] =
   case node[:noosfero][:server][:proxy]
@@ -111,6 +111,9 @@ default[:noosfero][:logrotate][:rotate] = 100_000
 default[:noosfero][:logrotate][:frequency] = 'daily'
 
 default[:noosfero][:backup] = {}
+default[:noosfero][:backup][:enable] = false
 default[:noosfero][:backup][:to] = {}
 default[:noosfero][:backup][:to][:port] = 22
+default[:noosfero][:backup][:to][:user] = "backup"
+default[:noosfero][:backup][:to][:path] = "/home/#{node[:noosfero][:backup][:to][:user]}/#{node[:noosfero][:service_name]}/db"
 
