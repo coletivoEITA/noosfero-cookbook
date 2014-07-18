@@ -21,10 +21,10 @@ if node[:noosfero][:backup][:enable]
       end
 
       store_with SCP do |storage|
-        storage.compress = true
-        storage.host = "#{node[:noosfero][:backup][:to][:host]}"
+        storage.ip = "#{node[:noosfero][:backup][:to][:host]}"
         storage.port = #{node[:noosfero][:backup][:to][:port]}
-        storage.ssh_user = "#{node[:noosfero][:backup][:to][:user]}"
+        storage.username = "#{node[:noosfero][:backup][:to][:user]}"
+
         storage.path = "#{node[:noosfero][:backup][:to][:path]}"
         storage.keep = 5
       end
