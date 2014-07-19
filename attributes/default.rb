@@ -106,6 +106,11 @@ default[:noosfero][:server][:proxy_backend_port] =
   end
 default[:noosfero][:server][:block_bots] = ['msnbot', 'Purebot', 'Baiduspider', 'Lipperhey', 'Mail.Ru', 'scrapbot']
 
+default[:noosfero][:server][:backlog] = 2048
+default[:noosfero][:server][:restart_on_requests] = [200,300]
+default[:noosfero][:server][:restart_on_memory] = [160,192]
+default[:noosfero][:server][:warmup_time] = 4
+
 default[:noosfero][:logrotate] = {}
 default[:noosfero][:logrotate][:rotate] = 100_000
 default[:noosfero][:logrotate][:frequency] = 'daily'

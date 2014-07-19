@@ -4,17 +4,17 @@ PidsDir = "#{RailsRoot}/tmp/pids"
 ListenAddress = "127.0.0.1"
 ListenPort = <%= @server[:port] %>
 UnixListen = "run/unicorn.sock"
-Backlog = 2048
+Backlog = <%= @server[:backlog] %>
 
 Workers = <%= @server[:workers] %>
 Timeout = <%= @server[:timeout] %>
 
 WorkerWarmUp = true
-WorkerWarmUpTime = 4
+WorkerWarmUpTime = <%= @server[:warmup_time] %>
 WorkerWarmUpUrl = '/'
 
-WorkerKillByRequests = 500..600
-WorkerKillByMemory = 144..192
+WorkerKillByRequests = <%= @server[:restart_on_requests].first %>..<%= @server[:restart_on_requests].last %>
+WorkerKillByMemory = <%= @server[:restart_on_memory].first %>..<%= @server[:restart_on_memory].last %>
 
 # FIXME: this makes the worker too big and activate Unicorn::WorkerKiller::Oom
 WorkerOutOfBandGcFrequency = nil
