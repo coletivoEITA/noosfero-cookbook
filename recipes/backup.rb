@@ -7,11 +7,6 @@ if node[:noosfero][:backup][:enable]
     schedule :minute => 0, :hour => 0
 
     definition <<-DEF
-      split_into_chunks_of 4000
-
-      compress_with Gzip do |gzip|
-      end
-
       database PostgreSQL do |db|
         db.name = "#{node[:noosfero][:db][:name]}"
         db.host = "#{node[:noosfero][:db][:hostname]}"
@@ -20,13 +15,12 @@ if node[:noosfero][:backup][:enable]
         db.password = "#{node[:noosfero][:db][:password]}"
       end
 
-      store_with SCP do |storage|
-        storage.ip = "#{node[:noosfero][:backup][:to][:host]}"
-        storage.port = #{node[:noosfero][:backup][:to][:port]}
-        storage.username = "#{node[:noosfero][:backup][:to][:user]}"
-
-        storage.path = "#{node[:noosfero][:backup][:to][:path]}"
-        storage.keep = 5
+      store_with Hg do |hg|
+        hg.ip = "#{node[:noosfero][:backup][:to][:host]}"
+        hg.port = #{node[:noosfero][:backup][:to][:port]}
+        hg.username = "#{node[:noosfero][:backup][:to][:user]}"
+        hg.path = "#{node[:noosfero][:backup][:to][:path]}"
+        hg.syncer.add "#{node[:noosfero][:code_path]}"
       end
     DEF
   end

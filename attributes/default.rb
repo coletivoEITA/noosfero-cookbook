@@ -115,10 +115,14 @@ default[:noosfero][:logrotate] = {}
 default[:noosfero][:logrotate][:rotate] = 100_000
 default[:noosfero][:logrotate][:frequency] = 'daily'
 
+default[:backup][:version_from_git?] = true
+default[:backup][:git_repo] = 'https://github.com/coletivoEITA/backup.git'
+
 default[:noosfero][:backup] = {}
 default[:noosfero][:backup][:enable] = false
 default[:noosfero][:backup][:to] = {}
 default[:noosfero][:backup][:to][:port] = 22
 default[:noosfero][:backup][:to][:user] = "backup"
-default[:noosfero][:backup][:to][:path] = "/home/#{node[:noosfero][:backup][:to][:user]}/#{node[:noosfero][:service_name]}/db"
+default[:noosfero][:backup][:to][:path] = "/home/#{node[:noosfero][:backup][:to][:user]}/#{node[:fqdn]}/#{node[:noosfero][:service_name]}/"
+
 
