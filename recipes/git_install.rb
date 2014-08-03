@@ -23,11 +23,24 @@ end
     user node[:noosfero][:user]; group node[:noosfero][:group]
   end
 end
-if not node[:noosfero][:path]
-  %w[ log run tmp ].each do |dir|
-    link node[:noosfero]["#{dir}_path"] do
-      to "#{node[:noosfero][:code_path]}/#{dir}"
-    end
+%w[ log run tmp ].each do |dir|
+  link "#{node[:noosfero][:code_path]}/#{dir}" do
+    to node[:noosfero]["#{dir}_path"]
+    not_if{ node[:noosfero]["#{dir}_path"].start_with? node[:noosfero][:code_path] }
+  end
+end
+# FIXME: link configurations??
+
+# data paths
+%w[ index solr ].each do |dir|
+  directory "#{node[:noosfero][:data_path]}/#{dir}" do
+    user node[:noosfero][:user]; group node[:noosfero][:group]
+  end
+end
+%w[ index solr public/articles public/image_uploads public/thumbnails ].each do |dir|
+  link "#{node[:noosfero][:code_path]}/#{dir}" do
+    to "#{node[:noosfero][:data_path]}/#{dir}"
+    not_if{ node[:noosfero][:data_path].start_with? node[:noosfero][:code_path] }
   end
 end
 
@@ -35,7 +48,7 @@ end
 rvm_shell "noosfero-upgrade" do
   user node[:noosfero][:user]; group node[:noosfero][:group]
   cwd node[:noosfero][:code_path]
-  ruby_string node[:noosfero][:rvm_load]
+  ruby_string node[:noosfero][:ruby_string]
   code <<-EOH
     export RAILS_ENV=#{node[:noosfero][:rails_env]}
     rake noosfero:translations:compile

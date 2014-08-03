@@ -16,12 +16,13 @@ default[:noosfero][:upgrade_script] = ''
 
 default[:noosfero][:path] = nil
 if node[:noosfero][:path]
+  default[:noosfero][:user_install] = true
   default[:noosfero][:code_path] = node[:noosfero][:path]
-  default[:noosfero][:data_path] = node[:noosfero][:path]
-  %w[ config log run tmp ].each do |dir|
-    default[:noosfero]["#{dir}_path"] = "#{node[:noosfero][:path]}/#{dir}"
+  %w[ data config log run tmp ].each do |dir|
+    default[:noosfero]["#{dir}_path"] = "/home/#{node[:noosfero][:user]}/#{dir}"
   end
 else
+  default[:noosfero][:user_install] = false
   default[:noosfero][:code_path] = "/usr/share/#{service_name}"
   default[:noosfero][:data_path] = "/var/lib/#{service_name}"
   default[:noosfero][:config_path] = "/etc/#{service_name}"
@@ -30,7 +31,7 @@ else
   default[:noosfero][:tmp_path] = "/var/tmp/#{service_name}"
 end
 
-default[:noosfero][:rvm_load] = "system"
+default[:noosfero][:ruby_string] = "system"
 default[:noosfero][:dependencies_with] = 'quick_start'
 
 case node[:platform_family]

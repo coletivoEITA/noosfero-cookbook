@@ -55,8 +55,8 @@ fi
 
 noosfero_run() {
   if [ "$NOOSFERO_USER" != "$USER" ]; then
-  <% if @rvm_load %>
-    su $NOOSFERO_USER -l -c "cd $NOOSFERO_DIR && rvm use <%= @rvm_load %> && $*"
+  <% if @ruby_string %>
+    su $NOOSFERO_USER -l -c "cd $NOOSFERO_DIR && rvm use <%= @ruby_string %> && $*"
   <% else %>
     su $NOOSFERO_USER -l -c "cd $NOOSFERO_DIR && $*"
   <% end %>
