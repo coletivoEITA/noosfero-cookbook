@@ -6,22 +6,6 @@ if node[:noosfero][:backup][:enable]
     description "Database backup"
     schedule :minute => 0, :hour => 0
 
-    definition <<-DEF
-      database PostgreSQL do |db|
-        db.name = "#{node[:noosfero][:db][:name]}"
-        db.host = "#{node[:noosfero][:db][:hostname]}"
-        db.port = "#{node[:noosfero][:db][:port]}"
-        db.username = "#{node[:noosfero][:db][:username]}"
-        db.password = "#{node[:noosfero][:db][:password]}"
-      end
-
-      store_with Hg do |hg|
-        hg.ip = "#{node[:noosfero][:backup][:to][:host]}"
-        hg.port = #{node[:noosfero][:backup][:to][:port]}
-        hg.username = "#{node[:noosfero][:backup][:to][:user]}"
-        hg.path = "#{node[:noosfero][:backup][:to][:path]}"
-        hg.syncer.add "#{node[:noosfero][:code_path]}"
-      end
-    DEF
+    template :cookbook => 'noosfero', :source => 'backup_model.rb.erb', :variables => nnod[:noosfero]
   end
 end

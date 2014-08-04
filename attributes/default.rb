@@ -14,15 +14,20 @@ default[:noosfero][:git_revision] = "stable"
 
 default[:noosfero][:upgrade_script] = ''
 
+default[:noosfero][:paths_in_code] = false
 default[:noosfero][:path] = nil
-if node[:noosfero][:path]
-  default[:noosfero][:user_install] = true
+default[:noosfero][:user_install] = !node[:noosfero][:path].empty?
+
+if node[:noosfero][:paths_in_code]
+  %w[ config log run tmp ].each do |dir|
+    default[:noosfero]["#{dir}_path"] = "#{node[:noosfero][:code_path]}/#{dir}"
+  end
+elsif node[:noosfero][:user_install]
   default[:noosfero][:code_path] = node[:noosfero][:path]
   %w[ data config log run tmp ].each do |dir|
     default[:noosfero]["#{dir}_path"] = "/home/#{node[:noosfero][:user]}/#{dir}"
   end
 else
-  default[:noosfero][:user_install] = false
   default[:noosfero][:code_path] = "/usr/share/#{service_name}"
   default[:noosfero][:data_path] = "/var/lib/#{service_name}"
   default[:noosfero][:config_path] = "/etc/#{service_name}"

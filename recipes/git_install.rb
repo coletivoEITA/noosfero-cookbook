@@ -18,30 +18,34 @@ git node[:noosfero][:code_path] do
 end
 
 # Directories
-%w[ code_path data_path config_path log_path run_path tmp_path ].each do |path|
-  directory node[:noosfero][path] do
-    user node[:noosfero][:user]; group node[:noosfero][:group]
+unless node[:noosfero][:paths_in_code]
+  %w[ code_path data_path config_path log_path run_path tmp_path ].each do |path|
+    directory node[:noosfero][path] do
+      user node[:noosfero][:user]; group node[:noosfero][:group]
+    end
   end
-end
-%w[ log run tmp ].each do |dir|
-  link "#{node[:noosfero][:code_path]}/#{dir}" do
-    to node[:noosfero]["#{dir}_path"]
-    not_if{ node[:noosfero]["#{dir}_path"].start_with? node[:noosfero][:code_path] }
+  %w[ log run tmp ].each do |dir|
+    link "#{node[:noosfero][:code_path]}/#{dir}" do
+      to node[:noosfero]["#{dir}_path"]
+      not_if{ node[:noosfero]["#{dir}_path"].start_with? node[:noosfero][:code_path] }
+    end
   end
-end
-# FIXME: link configurations??
 
-# data paths
-%w[ index solr ].each do |dir|
-  directory "#{node[:noosfero][:data_path]}/#{dir}" do
-    user node[:noosfero][:user]; group node[:noosfero][:group]
+  # data paths
+  %w[ index solr public/articles public/image_uploads public/thumbnails ].each do |dir|
+    directory "#{node[:noosfero][:data_path]}/#{dir}" do
+      user node[:noosfero][:user]; group node[:noosfero][:group]
+    end
   end
-end
-%w[ index solr public/articles public/image_uploads public/thumbnails ].each do |dir|
-  link "#{node[:noosfero][:code_path]}/#{dir}" do
-    to "#{node[:noosfero][:data_path]}/#{dir}"
-    not_if{ node[:noosfero][:data_path].start_with? node[:noosfero][:code_path] }
+  %w[ index solr public/articles public/image_uploads public/thumbnails ].each do |dir|
+    link "#{node[:noosfero][:code_path]}/#{dir}" do
+      to "#{node[:noosfero][:data_path]}/#{dir}"
+      not_if{ node[:noosfero][:data_path].start_with? node[:noosfero][:code_path] }
+    end
   end
+
+  # TODO: link configurations??
+
 end
 
 # Upgrade
