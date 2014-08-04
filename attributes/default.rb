@@ -16,6 +16,7 @@ default[:noosfero][:upgrade_script] = ''
 
 default[:noosfero][:paths_in_code] = false
 default[:noosfero][:path] = nil
+default[:noosfero][:code_path] = node[:noosfero][:path] if node[:noosfero][:path]
 default[:noosfero][:user_install] = !node[:noosfero][:path].empty?
 
 if node[:noosfero][:paths_in_code]
@@ -23,7 +24,6 @@ if node[:noosfero][:paths_in_code]
     default[:noosfero]["#{dir}_path"] = "#{node[:noosfero][:code_path]}/#{dir}"
   end
 elsif node[:noosfero][:user_install]
-  default[:noosfero][:code_path] = node[:noosfero][:path]
   %w[ data config log run tmp ].each do |dir|
     default[:noosfero]["#{dir}_path"] = "/home/#{node[:noosfero][:user]}/#{dir}"
   end

@@ -35,6 +35,7 @@ unless node[:noosfero][:paths_in_code]
   %w[ index solr public/articles public/image_uploads public/thumbnails ].each do |dir|
     directory "#{node[:noosfero][:data_path]}/#{dir}" do
       user node[:noosfero][:user]; group node[:noosfero][:group]
+      recursive true
     end
   end
   %w[ index solr public/articles public/image_uploads public/thumbnails ].each do |dir|

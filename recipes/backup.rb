@@ -2,10 +2,10 @@
 if node[:noosfero][:backup][:enable]
   include_recipe 'backup'
 
-  backup_model "#{node[:noosfero][:service_name]}_db" do
-    description "Database backup"
+  backup_model node[:noosfero][:service_name] do
+    description "Database and data files"
     schedule :minute => 0, :hour => 0
 
-    template :cookbook => 'noosfero', :source => 'backup_model.rb.erb', :variables => nnod[:noosfero]
+    template :cookbook => 'noosfero', :source => 'backup_model.rb.erb', :variables => node[:noosfero]
   end
 end
