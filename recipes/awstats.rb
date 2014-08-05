@@ -25,8 +25,8 @@ if node[:noosfero][:awstats][:enable]
   end
 
   if node[:noosfero][:awstats][:domain]
-    site = "#{node[:noosfero][:service_name]}_awstats"
-    template "#{node[:apache][:dir]}/sites-available/#{site}.conf" do
+    site = "#{node[:noosfero][:service_name]}_awstats.conf"
+    template "#{node[:apache][:dir]}/sites-available/#{site}" do
       source "awstats_apache.conf.erb"
       owner node[:apache][:user]
       group node[:apache][:group]
