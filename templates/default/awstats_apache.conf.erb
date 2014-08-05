@@ -1,0 +1,7 @@
+<VirtualHost *:<%= node[:apache][:listen_ports].first %>>
+  ServerName <%= @domain %>
+
+  Include /etc/apache2/conf.d/awstats
+  RedirectMatch ^/$ /awstats/awstats.pl?config=<%= node[:noosfero][:server_name] %>
+</VirtualHost>
+

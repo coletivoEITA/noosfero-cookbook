@@ -11,4 +11,5 @@ include_recipe 'noosfero::server'
 include_recipe 'noosfero::cache'
 include_recipe 'noosfero::logrotate'
 include_recipe 'noosfero::backup'
+include_recipe 'noosfero::awstats'
 

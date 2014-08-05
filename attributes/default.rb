@@ -9,6 +9,9 @@ default[:noosfero][:install_from] = "git"
 default[:noosfero][:user] = service_name
 default[:noosfero][:group] = service_name
 
+default[:noosfero][:server_name] = nil
+default[:noosfero][:custom_domains] = []
+
 default[:noosfero][:git_url] = "https://gitlab.com/noosfero/noosfero.git"
 default[:noosfero][:git_revision] = "stable"
 
@@ -35,6 +38,9 @@ else
   default[:noosfero][:run_path] = "/var/run/#{service_name}"
   default[:noosfero][:tmp_path] = "/var/tmp/#{service_name}"
 end
+
+default[:noosfero][:access_log_path] = "#{node[:noosfero][:log_path]}/access.log"
+default[:noosfero][:error_log_path] = "#{node[:noosfero][:log_path]}/error.log"
 
 default[:noosfero][:ruby_string] = "system"
 default[:noosfero][:dependencies_with] = 'quick_start'
@@ -131,4 +137,12 @@ default[:noosfero][:backup][:to][:port] = 22
 default[:noosfero][:backup][:to][:user] = "backup"
 default[:noosfero][:backup][:to][:path] = "/home/#{node[:noosfero][:backup][:to][:user]}/#{node[:fqdn]}/#{node[:noosfero][:service_name]}/"
 
+default[:noosfero][:awstats] = {}
+default[:noosfero][:awstats][:enable] = false
+default[:noosfero][:awstats][:cron_minute] = '*/15'
+default[:noosfero][:awstats][:domain] = "stats.#{node[:noosfero][:server_name]}"
+default[:noosfero][:awstats][:htpasswd] = {}
+default[:noosfero][:awstats][:htpasswd][:enable] = true
+default[:noosfero][:awstats][:htpasswd][:user] = node[:noosfero][:service_name]
+default[:noosfero][:awstats][:htpasswd][:password] = node[:noosfero][:awstats][:htpasswd][:user].reverse
 

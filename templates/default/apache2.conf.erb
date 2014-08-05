@@ -54,9 +54,9 @@
 
   ErrorDocument 503 /503.html
 
-  ErrorLog <%= @log_path %>/error.log
+  ErrorLog <%= @error_log_path %>
   LogLevel warn
-  CustomLog <%= @log_path %>/access.log combined
+  CustomLog <%= @access_log_path %> combined
 
   Include <%= @code_path %>/etc/noosfero/apache/cache.conf
 

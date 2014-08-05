@@ -48,8 +48,8 @@ server {
   ssl_certificate_key <%= @ssl[:certificate_key] %>;
   <% end %>
 
-  access_log <%= @log_path %>/access.log;
-  error_log <%= @log_path %>/error.log;
+  access_log <%= @access_log_path %> combined;
+  error_log <%= @error_log_path %>;
 
   <% if @ssl[:enable] and @ssl[:redirect_http] %>
   if ( $scheme = http ) {

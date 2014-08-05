@@ -25,8 +25,8 @@ The default recipe runs others recipes according to the settings
 | Attribute | Description | Default |
 | --------  | --------    | ------- |
 | <tt>node[:noosfero][:user]</tt> | The user to create and to run noosfero | <tt>default[:noosfero][:service_name]</tt> |
-| <tt>node[:noosfero][:group]</tt> | The group to create and to run noosfero | tt>default[:noosfero][:service_name]</tt> |
-| <tt>node[:noosfero][:git_url]</tt> | The git repo containing Noosfero to be used | tt>https://gitlab.com/noosfero/noosfero.git</tt> |
+| <tt>node[:noosfero][:group]</tt> | The group to create and to run noosfero | <tt>default[:noosfero][:service_name]</tt> |
+| <tt>node[:noosfero][:git_url]</tt> | The git repo containing Noosfero to be used | <tt>https://gitlab.com/noosfero/noosfero.git</tt> |
 | <tt>node[:noosfero][:git_revision]</tt> | The branch, tag or commit to be used | <tt>"stable"</tt> |
 | <tt>node[:noosfero][:upgrade_script]</tt> | A script to be run on git sync | <tt>''</tt> |
 |  Paths  |
