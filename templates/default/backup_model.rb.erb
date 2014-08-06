@@ -28,6 +28,7 @@ Backup::Model.new <%= @service_name.inspect %>, "Database and data files" do
 
     hg.syncer.exclude '.git'
     hg.syncer.exclude '.sass-cache'
+    hg.syncer.exclude 'tmp/sass-cache'
     hg.syncer.exclude 'tmp/attachment_fu'
   end
 end
