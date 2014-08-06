@@ -42,7 +42,7 @@ end
 default[:noosfero][:access_log_path] = "#{node[:noosfero][:log_path]}/access.log"
 default[:noosfero][:error_log_path] = "#{node[:noosfero][:log_path]}/error.log"
 
-default[:noosfero][:ruby_string] = "system"
+default[:noosfero][:ruby_version] = "system"
 default[:noosfero][:dependencies_with] = 'quick_start'
 
 case node[:platform_family]
@@ -126,6 +126,7 @@ default[:noosfero][:server][:warmup_time] = 4
 default[:noosfero][:logrotate] = {}
 default[:noosfero][:logrotate][:rotate] = 100_000
 default[:noosfero][:logrotate][:frequency] = 'daily'
+default[:noosfero][:logrotate][:options] = ['copytruncate', 'compress', 'delaycompress', 'notifempty', 'missingok']
 
 default[:backup][:version_from_git?] = true
 default[:backup][:git_repo] = 'https://github.com/coletivoEITA/backup.git'

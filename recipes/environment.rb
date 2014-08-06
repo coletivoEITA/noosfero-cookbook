@@ -3,7 +3,7 @@ env = node[:noosfero][:environment]
 rvm_shell "noosfero-create-environment" do
   user node[:noosfero][:user]; group node[:noosfero][:group]
   cwd node[:noosfero][:code_path]
-  ruby_string node[:noosfero][:ruby_string]
+  ruby_string node[:noosfero][:ruby_version]
   if env
     code <<-EOH
       export RAILS_ENV=#{node[:noosfero][:rails_env]}

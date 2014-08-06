@@ -53,7 +53,7 @@ end
 rvm_shell "noosfero-upgrade" do
   user node[:noosfero][:user]; group node[:noosfero][:group]
   cwd node[:noosfero][:code_path]
-  ruby_string node[:noosfero][:ruby_string]
+  ruby_string node[:noosfero][:ruby_version]
   code <<-EOH
     export RAILS_ENV=#{node[:noosfero][:rails_env]}
     rake noosfero:translations:compile

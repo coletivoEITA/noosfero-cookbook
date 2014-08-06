@@ -9,18 +9,18 @@ end
 
 if dependencies_with == 'bundler'
   rvm_shell 'noosfero-bundle-install' do
-    user node[:noosfero][:user]; group node[:noosfero][:group] if node[:noosfero][:ruby_string]
+    user node[:noosfero][:user]; group node[:noosfero][:group] if node[:noosfero][:ruby_version]
     cwd node[:noosfero][:code_path]
-    ruby_string node[:noosfero][:ruby_string]
+    ruby_string node[:noosfero][:ruby_version]
     code <<-EOH
       bundle check || bundle install
     EOH
   end
 elsif dependencies_with == 'quick_start'
   rvm_shell 'noosfero-quick-start' do
-    user node[:noosfero][:user]; group node[:noosfero][:group] if node[:noosfero][:ruby_string]
+    user node[:noosfero][:user]; group node[:noosfero][:group] if node[:noosfero][:ruby_version]
     cwd node[:noosfero][:code_path]
-    ruby_string node[:noosfero][:ruby_string]
+    ruby_string node[:noosfero][:ruby_version]
     code <<-EOH
       script/quick-start
     EOH

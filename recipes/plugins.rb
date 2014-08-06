@@ -3,7 +3,7 @@ plugins = node[:noosfero][:plugins].sort
 rvm_shell "noosfero-enabled-selected-plugins" do
   user node[:noosfero][:user]; group node[:noosfero][:group]
   cwd node[:noosfero][:code_path]
-  ruby_string node[:noosfero][:ruby_string]
+  ruby_string node[:noosfero][:ruby_version]
   code <<-EOH
     script/noosfero-plugins disableall
     script/noosfero-plugins enable #{plugins.join ' '}

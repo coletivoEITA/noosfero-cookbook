@@ -48,7 +48,7 @@ end
 rvm_shell "noosfero-load-dump" do
   user node[:noosfero][:user]; group node[:noosfero][:group]
   cwd node[:noosfero][:code_path]
-  ruby_string node[:noosfero][:ruby_string]
+  ruby_string node[:noosfero][:ruby_version]
   code <<-EOH
     psql #{node[:noosfero][:db][:name]} < #{node[:noosfero][:db][:create_from_dump]}
   EOH
@@ -58,7 +58,7 @@ end
 rvm_shell "noosfero-schema-load" do
   user node[:noosfero][:user]; group node[:noosfero][:group]
   cwd node[:noosfero][:code_path]
-  ruby_string node[:noosfero][:ruby_string]
+  ruby_string node[:noosfero][:ruby_version]
   code <<-EOH
     export RAILS_ENV=#{node[:noosfero][:rails_env]}
     rake db:schema:load
