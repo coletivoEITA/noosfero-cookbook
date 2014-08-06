@@ -28,6 +28,7 @@ when 'nginx'
     owner node[:nginx][:user]
     group node[:nginx][:group]
     variables node[:noosfero]
+    notifies :reload, "service[nginx]"
   end
   nginx_site node[:noosfero][:service_name] do
     enable true
@@ -40,6 +41,7 @@ when 'apache'
     owner node[:apache][:user]
     group node[:apache][:group]
     variables node[:noosfero]
+    notifies :reload, "service[apache]"
   end
   apache_site node[:noosfero][:service_name] do
     enable true
