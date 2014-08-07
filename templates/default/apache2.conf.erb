@@ -18,11 +18,14 @@
 
   DocumentRoot "<%= "#{@code_path}/public" %>"
   <Directory "<%= "#{@code_path}/public" %>">
-    Options FollowSymLinks
+    Options +FollowSymLinks
     AllowOverride None
+  <% if node[:apache][:version] == '2.4' %>
     Require all granted
+  <% else %>
     Order Allow,Deny
     Allow from all
+  <% end %>
   </Directory>
 
   ProxyPreserveHost On
