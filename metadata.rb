@@ -4,7 +4,7 @@ maintainer_email 'braulio@eita.org.br'
 license          'GPLv3+'
 description      'Install/configure Noosfero social-economic network'
 long_description File.read("#{File.dirname __FILE__}/README.md")
-version          '2.4.3'
+version          '2.4.4'
 
 %w{ debian ubuntu }.each do |os|
   supports os
@@ -19,7 +19,7 @@ depends         'database'
 depends         'postgresql'
 
 depends         'nginx'
-depends         'apache2'
+depends         'apache2', ">= 2.0.0"
 
 depends         'varnish'
 depends         'memcached'
