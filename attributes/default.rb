@@ -71,7 +71,7 @@ default[:noosfero][:plugins_settings][:solr] = {}
 default[:noosfero][:plugins_settings][:solr][:address] = "127.0.0.1"
 default[:noosfero][:plugins_settings][:solr][:port] = 8983
 default[:noosfero][:plugins_settings][:solr][:memory] = 128
-default[:noosfero][:plugins_settings][:solr][:timeout] = 0
+default[:noosfero][:plugins_settings][:solr][:timeout] = 600
 
 default[:varnish][:vcl_cookbook] = 'noosfero'
 default[:noosfero][:cache] = {}
