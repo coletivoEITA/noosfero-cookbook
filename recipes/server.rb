@@ -36,7 +36,7 @@ when 'nginx'
 when 'apache'
   include_recipe 'apache2'
 
-  template "#{node[:apache][:dir]}/sites-available/#{node[:noosfero][:service_name]}" do
+  template "#{node[:apache][:dir]}/sites-available/#{node[:noosfero][:service_name]}.conf" do
     source "apache2.conf.erb"
     owner node[:apache][:user]
     group node[:apache][:group]
