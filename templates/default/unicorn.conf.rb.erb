@@ -18,6 +18,12 @@ CurrentPrio = Process.getpriority Process::PRIO_PROCESS, 0
 WorkerWarmUpRenice = `bash -c 'ulimit -e'`.to_i-20 >= CurrentPrio rescue false
 WorkerWarmUpRenicePrio = 19
 
+begin
+  require 'unicorn/worker_killer'
+  WorkerKiller = true
+rescue LoadError
+  WorkerKiller = nil
+end
 WorkerKillByRequests = <%= @server[:restart_on_requests].first %>..<%= @server[:restart_on_requests].last %>
 WorkerKillByMemory = <%= @server[:restart_on_memory].first %>..<%= @server[:restart_on_memory].last %>
 
@@ -75,10 +81,10 @@ after_fork do |server, worker|
   # Start up the database connection again in the worker
   ActiveRecord::Base.establish_connection if defined? ActiveRecord::Base
 
-  # reset memcache connection
-  Rails.cache.instance_variable_get(:@data).reset if Rails.cache.class == ActiveSupport::Cache::MemCacheStore
+  # reset memcache connection (if using memcache-client)
+  Rails.cache.instance_variable_get(:@data).reset if Rails.cache.class.to_s == 'ActiveSupport::Cache::MemCacheStore'
 
-  if (require 'unicorn/worker_killer' rescue nil)
+  if WorkerKiller
     Unicorn::WorkerKiller::MaxRequests.new nil, WorkerKillByRequests.begin, WorkerKillByRequests.end if WorkerKillByRequests
     Unicorn::WorkerKiller::Oom.new nil, WorkerKillByMemory.begin * (1024**2), WorkerKillByMemory.end * (1024**2) if WorkerKillByMemory
   end
