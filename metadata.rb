@@ -1,5 +1,5 @@
 name             'noosfero'
-maintainer       'Bráulio Bhavamitra'
+maintainer       'Braulio Bhavamitra'
 maintainer_email 'braulio@eita.org.br'
 license          'GPLv3+'
 description      'Install/configure Noosfero social-economic network'
