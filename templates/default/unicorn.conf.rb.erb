@@ -1,5 +1,6 @@
 RailsRoot = "<%= @code_path %>"
 PidsDir = "#{RailsRoot}/tmp/pids"
+OldPid = "#{PidsDir}/unicorn.pid.oldbin"
 
 ListenAddress = "127.0.0.1"
 ListenPort = <%= @server[:port] %>
@@ -9,14 +10,15 @@ Backlog = <%= @server[:backlog] %>
 Workers = <%= @server[:workers] %>
 Timeout = <%= @server[:timeout] %>
 
-WorkerWarmUp = true
-WorkerWarmUpTime = <%= @server[:warmup_time] %>
-WorkerWarmUpUrl = '/'
+WarmUp = true
+WarmUpTime = <%= @server[:warmup_time] %>
+# caution use non cacheable urls
+WarmUpUrl = '/admin/plugins'
 
 CurrentPrio = Process.getpriority Process::PRIO_PROCESS, 0
 # put "* - nice 0" on /etc/security/limits.conf to enable
-WorkerWarmUpRenice = `bash -c 'ulimit -e'`.to_i-20 >= CurrentPrio rescue false
-WorkerWarmUpRenicePrio = 19
+WarmUpRenice = `bash -c 'ulimit -e'`.to_i-20 >= CurrentPrio rescue false
+WarmUpRenicePrio = 19
 
 begin
   require 'unicorn/worker_killer'
@@ -52,20 +54,25 @@ preload_app true
 GC.copy_on_write_friendly = true if GC.respond_to? :copy_on_write_friendly=
 
 before_fork do |server, worker|
+  # worker 0 is the first to init, so hold the app here and make master ready and warmed up
+  if WarmUp and worker.nr == 0
+    Process.setpriority Process::PRIO_PROCESS, 0, WarmUpRenicePrio if WarmUpRenice
+
+    require 'rack/test'
+    client = Rack::MockRequest.new server.app
+    client.get WarmUpUrl
+
+    Process.setpriority Process::PRIO_PROCESS, 0, CurrentPrio if WarmUpRenice
+  end
+
   # Disconnect since the database connection will not carry over
   ActiveRecord::Base.connection.disconnect! if defined? ActiveRecord::Base
 
   # a .oldbin file exists if unicorn was gracefully restarted with a USR2 signal
   # we should terminate the old process now that we're up and running
   Thread.new do
-    old_pid_file = "#{PidsDir}/unicorn.pid.oldbin"
-    if File.exists? old_pid_file
+    if File.exists? OldPid
       old_pid = File.read(old_pid_file).to_i
-
-      Workers.times.each do |worker_nr|
-        sleep WorkerWarmUpTime
-        Process.kill "TTOU", old_pid
-      end if WorkerWarmUp
 
       begin
         Process.kill "QUIT", old_pid
@@ -89,30 +96,8 @@ after_fork do |server, worker|
     Unicorn::WorkerKiller::Oom.new nil, WorkerKillByMemory.begin * (1024**2), WorkerKillByMemory.end * (1024**2) if WorkerKillByMemory
   end
 
-  if WorkerOutOfBandGcFrequency
-    require_dependency 'unicorn/oob_gc'
-    middleware = ActionController::Dispatcher.middleware
-    GC.disable
-    middleware.use Unicorn::OobGC, WorkerOutOfBandGcFrequency
-  end
-
   # say to the kernel to kill very big workers first than other processes
   File.open("/proc/#{Process.pid}/oom_adj", "w"){ |f| f << '12' }
-
-  if WorkerWarmUp
-    # Don't warm up all workers at once, to allow old workers to use CPU.
-    # Also, worker is only considered ready on after_fork complete, so the new worker worker is ready only after warm up.
-    sleep worker.nr * WorkerWarmUpTime
-
-    Process.setpriority Process::PRIO_PROCESS, 0, WorkerWarmUpRenicePrio if WorkerWarmUpRenice
-
-    # make a request warming up this new worker
-    require 'rack/test'
-    request = Rack::MockRequest.new server.app
-    request.get "http://#{ListenAddress}:#{ListenPort}#{WorkerWarmUpUrl}"
-
-    Process.setpriority Process::PRIO_PROCESS, 0, CurrentPrio if WorkerWarmUpRenice
-  end
 
   if WorkerListen
     # per-process listener ports for debugging/admin/migrations
@@ -123,4 +108,3 @@ after_fork do |server, worker|
     system "echo #{Process.pid} > #{child_pid_file}"
   end
 end
-
