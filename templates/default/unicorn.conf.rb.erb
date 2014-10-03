@@ -13,7 +13,7 @@ Timeout = <%= @server[:timeout] %>
 WarmUp = true
 WarmUpTime = <%= @server[:warmup_time] %>
 # caution use non cacheable urls
-WarmUpUrl = '/admin/plugins'
+WarmUpUrl = ['/admin/plugins', '/', '/profile/content']
 
 CurrentPrio = Process.getpriority Process::PRIO_PROCESS, 0
 # put "* - nice 0" on /etc/security/limits.conf to enable
@@ -54,33 +54,40 @@ preload_app true
 GC.copy_on_write_friendly = true if GC.respond_to? :copy_on_write_friendly=
 
 before_fork do |server, worker|
-  # worker 0 is the first to init, so hold the app here and make master ready and warmed up
-  if WarmUp and worker.nr == 0
-    Process.setpriority Process::PRIO_PROCESS, 0, WarmUpRenicePrio if WarmUpRenice
+  # worker 0 is the first to init, so hold the master here
+  if worker.nr == 0
+    if WarmUp
+      Process.setpriority Process::PRIO_PROCESS, 0, WarmUpRenicePrio if WarmUpRenice
 
-    require 'rack/test'
-    client = Rack::MockRequest.new server.app
-    client.get WarmUpUrl
+      require 'rack/test'
+      client = Rack::MockRequest.new server.app
+      Array(WarmUpUrl).each do |url|
+        client.get url
+      end
 
-    Process.setpriority Process::PRIO_PROCESS, 0, CurrentPrio if WarmUpRenice
+      Process.setpriority Process::PRIO_PROCESS, 0, CurrentPrio if WarmUpRenice
+    end
+
+    Thread.new do
+      # wait a little for the new master
+      sleep 5
+
+      # a .oldbin file exists if unicorn was gracefully restarted with a USR2 signal
+      # we should terminate the old process now that we're up and running
+      if File.exists? OldPidFile
+        old_pid = File.read(OldPidFile).to_i
+        begin
+          Process.kill "QUIT", old_pid
+          File.delete OldPidFile
+        rescue Errno::ENOENT, Errno::ESRCH
+          # someone else did our job for us
+        end
+      end
+    end
   end
 
   # Disconnect since the database connection will not carry over
   ActiveRecord::Base.connection.disconnect! if defined? ActiveRecord::Base
-
-  # a .oldbin file exists if unicorn was gracefully restarted with a USR2 signal
-  # we should terminate the old process now that we're up and running
-  Thread.new do
-    if File.exists? OldPidFile
-      old_pid = File.read(OldPidFile).to_i
-      begin
-        Process.kill "QUIT", old_pid
-        File.delete old_pid_file
-      rescue Errno::ENOENT, Errno::ESRCH
-        # someone else did our job for us
-      end
-    end
-  end if worker.nr == 0 # only execute once
 end
 
 after_fork do |server, worker|
