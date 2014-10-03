@@ -41,8 +41,8 @@ working_directory RailsRoot
 worker_processes Workers
 timeout Timeout
 
-#stderr_path "#{RailsRoot}/log/unicorn.stderr.log"
-#stdout_path "#{RailsRoot}/log/unicorn.stdout.log"
+stderr_path "#{RailsRoot}/log/unicorn.stderr.log"
+stdout_path "#{RailsRoot}/log/unicorn.stdout.log"
 pid "#{PidsDir}/unicorn.pid"
 
 listen "#{RailsRoot}/#{UnixListen}", :backlog => Backlog
