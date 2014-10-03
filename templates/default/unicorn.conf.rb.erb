@@ -13,7 +13,7 @@ Timeout = <%= @server[:timeout] %>
 WarmUp = true
 WarmUpTime = <%= @server[:warmup_time] %>
 # caution use non cacheable urls
-WarmUpUrl = ['/admin/plugins', '/', '/profile/content']
+WarmUpUrl = <%= @server[:warmup_urls] %>
 
 CurrentPrio = Process.getpriority Process::PRIO_PROCESS, 0
 # put "* - nice 0" on /etc/security/limits.conf to enable
@@ -71,7 +71,7 @@ before_fork do |server, worker|
     if File.exists? OldPidFile
       Thread.new do
         # wait a little for the new master
-        sleep 5
+        sleep WarmUpTime
 
         # a .oldbin file exists if unicorn was gracefully restarted with a USR2 signal
         # we should terminate the old process now that we're up and running
