@@ -53,9 +53,11 @@ listen "#{ListenAddress}:#{ListenPort}", :tcp_nopush => true
 preload_app true
 GC.copy_on_write_friendly = true if GC.respond_to? :copy_on_write_friendly=
 
+# this is loaded on first run or restart conditions (URS2, HUP). Unset on first before_fork call
+master_run = true
+
 before_fork do |server, worker|
-  # worker 0 is the first to init, so hold the master here
-  if worker.nr == 0
+  if master_run
     if WarmUp
       Process.setpriority Process::PRIO_PROCESS, 0, WarmUpRenicePrio if WarmUpRenice
 
@@ -68,26 +70,28 @@ before_fork do |server, worker|
       Process.setpriority Process::PRIO_PROCESS, 0, CurrentPrio if WarmUpRenice
     end
 
-    if File.exists? OldPidFile
-      Thread.new do
-        # wait a little for the new master
-        sleep WarmUpTime
+    # Disconnect since the database connection will not carry over
+    ActiveRecord::Base.connection.disconnect! if defined? ActiveRecord::Base
 
-        # a .oldbin file exists if unicorn was gracefully restarted with a USR2 signal
-        # we should terminate the old process now that we're up and running
-        old_pid = File.read(OldPidFile).to_i
-        begin
-          Process.kill "QUIT", old_pid
-          File.delete OldPidFile
-        rescue Errno::ENOENT, Errno::ESRCH
-          # someone else did our job for us
-        end
+    master_run = false
+  end
+
+  if File.exists? OldPidFile
+    Thread.new do
+      # wait a little for the new master
+      sleep WarmUpTime
+
+      # a .oldbin file exists if unicorn was gracefully restarted with a USR2 signal
+      # we should terminate the old process now that we're up and running
+      old_pid = File.read(OldPidFile).to_i
+      begin
+        Process.kill "QUIT", old_pid
+        File.delete OldPidFile
+      rescue Errno::ENOENT, Errno::ESRCH
+        # someone else did our job for us
       end
     end
   end
-
-  # Disconnect since the database connection will not carry over
-  ActiveRecord::Base.connection.disconnect! if defined? ActiveRecord::Base
 end
 
 after_fork do |server, worker|
