@@ -68,13 +68,13 @@ before_fork do |server, worker|
       Process.setpriority Process::PRIO_PROCESS, 0, CurrentPrio if WarmUpRenice
     end
 
-    Thread.new do
-      # wait a little for the new master
-      sleep 5
+    if File.exists? OldPidFile
+      Thread.new do
+        # wait a little for the new master
+        sleep 5
 
-      # a .oldbin file exists if unicorn was gracefully restarted with a USR2 signal
-      # we should terminate the old process now that we're up and running
-      if File.exists? OldPidFile
+        # a .oldbin file exists if unicorn was gracefully restarted with a USR2 signal
+        # we should terminate the old process now that we're up and running
         old_pid = File.read(OldPidFile).to_i
         begin
           Process.kill "QUIT", old_pid
