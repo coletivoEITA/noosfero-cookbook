@@ -1,6 +1,6 @@
 RailsRoot = "<%= @code_path %>"
 PidsDir = "#{RailsRoot}/tmp/pids"
-OldPid = "#{PidsDir}/unicorn.pid.oldbin"
+OldPidFile = "#{PidsDir}/unicorn.pid.oldbin"
 
 ListenAddress = "127.0.0.1"
 ListenPort = <%= @server[:port] %>
@@ -71,9 +71,8 @@ before_fork do |server, worker|
   # a .oldbin file exists if unicorn was gracefully restarted with a USR2 signal
   # we should terminate the old process now that we're up and running
   Thread.new do
-    if File.exists? OldPid
-      old_pid = File.read(old_pid_file).to_i
-
+    if File.exists? OldPidFile
+      old_pid = File.read(OldPidFile).to_i
       begin
         Process.kill "QUIT", old_pid
         File.delete old_pid_file
