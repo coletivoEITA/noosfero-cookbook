@@ -97,7 +97,8 @@ after_fork do |server, worker|
   end
 
   # say to the kernel to kill very big workers first than other processes
-  File.open("/proc/#{Process.pid}/oom_adj", "w"){ |f| f << '12' }
+  # Not very secure
+  #File.open("/proc/#{Process.pid}/oom_adj", "w"){ |f| f << '12' }
 
   if WorkerListen
     # per-process listener ports for debugging/admin/migrations
