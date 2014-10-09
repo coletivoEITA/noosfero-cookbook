@@ -59,6 +59,12 @@ server {
 
   location / {
   <% if not @server[:block_bots].empty? %>
+    if ($http_user_agent = "") {
+      return 403;
+    }
+    if ($http_user_agent = "-") {
+      return 403;
+    }
     if ($http_user_agent ~ (<%= @server[:block_bots].join '|' %>) ) {
       return 403;
     }
