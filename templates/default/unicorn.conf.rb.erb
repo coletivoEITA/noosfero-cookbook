@@ -7,7 +7,11 @@ ListenPort = <%= @server[:port] %>
 UnixListen = "run/unicorn.sock"
 Backlog = <%= @server[:backlog] %>
 
-Workers = <%= @server[:workers] %>
+<%
+  workers = @server[:workers]
+  workers = 3 if workers < 3
+%>
+Workers = <%= workers %>
 Timeout = <%= @server[:timeout] %>
 
 WarmUp = true
@@ -35,6 +39,20 @@ WorkerOutOfBandGcFrequency = nil
 WorkerListen = true
 WorkerPidFile = true
 
+WorkerDaemons = {
+  0 => {
+    :name => 'delayed_job',
+    :run => proc{
+      Delayed::Command.new([]).run 'delayed_job'
+    },
+  },
+  1 => {
+    :name => 'feed-updater',
+    :run => proc{
+      FeedUpdater.new.start
+    },
+  },
+}
 
 working_directory RailsRoot
 
@@ -72,8 +90,6 @@ before_fork do |server, worker|
 
     # Disconnect since the database connection will not carry over
     ActiveRecord::Base.connection.disconnect! if defined? ActiveRecord::Base
-
-    master_run = false
   end
 
   if File.exists? OldPidFile
@@ -92,9 +108,13 @@ before_fork do |server, worker|
       end
     end
   end
+
+  master_run = false
 end
 
 after_fork do |server, worker|
+  daemon = WorkerDaemons[worker.nr]
+
   # Start up the database connection again in the worker
   ActiveRecord::Base.establish_connection if defined? ActiveRecord::Base
 
@@ -110,12 +130,52 @@ after_fork do |server, worker|
   # Not very secure
   #File.open("/proc/#{Process.pid}/oom_adj", "w"){ |f| f << '12' }
 
-  if WorkerListen
-    # per-process listener ports for debugging/admin/migrations
-    server.listen "#{ListenAddress}:#{ListenPort + worker.nr}", :tries => -1, :delay => 5
+  unless daemon
+    if WorkerListen
+      # per-process listener ports for debugging/admin/migrations
+      server.listen "#{ListenAddress}:#{ListenPort + worker.nr}", :tries => -1, :delay => 5
+    end
+    if WorkerPidFile
+      child_pid_file = server.config[:pid].sub '.pid', ".#{worker.nr}.pid"
+      system "echo #{Process.pid} > #{child_pid_file}"
+    end
   end
-  if WorkerPidFile
-    child_pid_file = server.config[:pid].sub '.pid', ".#{worker.nr}.pid"
-    system "echo #{Process.pid} > #{child_pid_file}"
-  end
+
 end
+
+# daemons support
+require 'active_support/core_ext/module'
+class Unicorn::HttpServer
+
+  def worker_loop_with_daemons worker
+    daemon = WorkerDaemons[worker.nr]
+    if daemon
+      ctx = START_CTX.dup #save for later use with proc_name
+      init_worker_process worker
+      START_CTX.merge! ctx
+
+      name = "#{worker.nr}:#{daemon[:name]}"
+      proc_name "worker[#{name}]"
+      @logger.info "worker=#{name} ready as a daemon"
+
+      daemon[:run].call
+    else
+      worker_loop_without_daemons worker
+    end
+  end
+  alias_method_chain :worker_loop, :daemons
+
+  def awaken_master_with_daemons
+    if SIG_QUEUE.include? :QUIT
+      WORKERS.each do |pid, worker|
+        daemon = WorkerDaemons[worker.nr]
+        next unless daemon
+        Process.kill 'TERM', pid
+      end
+    end
+    awaken_master_without_daemons
+  end
+  alias_method_chain :awaken_master, :daemons
+
+end
+

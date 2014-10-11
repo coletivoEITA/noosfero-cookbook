@@ -32,7 +32,11 @@ SCRIPTNAME=/etc/init.d/$NAME
 NOOSFERO_DIR=<%= @code_path %>
 NOOSFERO_USER=<%= @user %>
 
+<% if @server['backend'] == 'unicorn' %>
+PIDFILE="$NOOSFERO_DIR/tmp/pids/unicorn.pid"
+<% else %>
 PIDFILE="$NOOSFERO_DIR/tmp/pids/delayed_job.pid"
+<% end %>
 
 . /lib/lsb/init-functions
 # Load the VERBOSE setting and other rcS variables
@@ -66,19 +70,28 @@ noosfero_run() {
 }
 
 main_script() {
+<% if @plugins.include? 'solr' %>
+  # WARN: Solr doesn't need a restart
+  if [ "$1" != "restart" ]; then
+    noosfero_run RAILS_ENV=<%= @rails_env %> rake solr:$1
+  fi
+<% end %>
+<% if @server['backend'] == 'unicorn' %>
+  if [ "$1" = "restart" ]; then
+    kill -USR2 `cat $NOOSFERO_DIR/tmp/pids/unicorn.pid` 2>&1 > /dev/null
+  elif [ "$1" = "start" ]; then
+    noosfero_run bundle exec unicorn_rails -D -c config/unicorn.conf.rb -E <%= @rails_env %>
+  elif [ "$1" = "stop" ]; then
+    kill `cat $NOOSFERO_DIR/tmp/pids/unicorn.pid` 2>&1 > /dev/null
+  fi
+<% else %>
   noosfero_run script/<%= @rails_env %> $1
+<% end %>
 }
 
 
 do_start() {
   if ! running; then
-  <% if @plugins.include? 'solr' %>
-    noosfero_run RAILS_ENV=<%= @rails_env %> rake solr:start
-  <% end %>
-  <% if @server['backend'] == 'unicorn' %>
-    # FIXME: move to script/<%= @rails_env %>
-    noosfero_run bundle exec unicorn_rails -D -c config/unicorn.conf.rb -E <%= @rails_env %>
-  <% end %>
     # actually start the service
     main_script start
   else
@@ -88,13 +101,6 @@ do_start() {
 
 do_stop() {
   if running; then
-  <% if @plugins.include? 'solr' %>
-    noosfero_run RAILS_ENV=<%= @rails_env %> rake solr:stop
-  <% end %>
-  <% if @server['backend'] == 'unicorn' %>
-    # FIXME: move to script/<%= @rails_env %>
-    kill `cat $NOOSFERO_DIR/tmp/pids/unicorn.pid` 2>&1 > /dev/null
-  <% end %>
     main_script stop
   else
     echo 'Noosfero is already stopped, nothing to do...'
@@ -105,11 +111,6 @@ do_restart() {
   if ! running; then
     do_start
   else
-    # WARN: Solr doesn't need a restart
-  <% if @server['backend'] == 'unicorn' %>
-    # FIXME: move to script/<%= @rails_env %>
-    kill -USR2 `cat $NOOSFERO_DIR/tmp/pids/unicorn.pid` 2>&1 > /dev/null
-  <% end %>
     main_script restart
   fi
 }
