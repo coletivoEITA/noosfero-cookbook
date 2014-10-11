@@ -122,8 +122,11 @@ default[:noosfero][:server][:block_bots] = ['msnbot', 'Purebot', 'Baiduspider', 
 default[:noosfero][:server][:backlog] = 2048
 default[:noosfero][:server][:restart_on_requests] = [200,300]
 default[:noosfero][:server][:restart_on_memory] = [208,256]
-default[:noosfero][:server][:warmup_time] = 5
-default[:noosfero][:server][:warmup_urls] = ['/admin/plugins', '/', '/profile/content']
+default[:noosfero][:server][:warmup_time] = 1
+default[:noosfero][:server][:warmup_urls] = ['/admin/plugins', '/', '/profile/content'].map{ |path| "http://#{node[:noosfero][:server_name]}/#{path}" }
+
+default[:noosfero][:server][:feed_updater] = {}
+default[:noosfero][:server][:feed_updater][:enable] = true
 
 default[:noosfero][:logrotate] = {}
 default[:noosfero][:logrotate][:rotate] = 100_000

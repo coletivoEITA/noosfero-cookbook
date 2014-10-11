@@ -7,11 +7,7 @@ ListenPort = <%= @server[:port] %>
 UnixListen = "run/unicorn.sock"
 Backlog = <%= @server[:backlog] %>
 
-<%
-  workers = @server[:workers]
-  workers = 3 if workers < 3
-%>
-Workers = <%= workers %>
+Workers = <%= @server[:workers] %>
 Timeout = <%= @server[:timeout] %>
 
 WarmUp = true
@@ -46,17 +42,19 @@ WorkerDaemons = {
       Delayed::Command.new([]).run 'delayed_job'
     },
   },
+<% if @server[:feed_updater][:enable] %>
   1 => {
     :name => 'feed-updater',
     :run => proc{
       FeedUpdater.new.start
     },
   },
+<% end %>
 }
 
 working_directory RailsRoot
 
-worker_processes Workers
+worker_processes (if Workers < WorkerDaemons.count+1 then WorkerDaemons.count+1 else Workers end)
 timeout Timeout
 
 stderr_path "#{RailsRoot}/log/unicorn.stderr.log"
@@ -90,26 +88,26 @@ before_fork do |server, worker|
 
     # Disconnect since the database connection will not carry over
     ActiveRecord::Base.connection.disconnect! if defined? ActiveRecord::Base
-  end
 
-  if File.exists? OldPidFile
-    Thread.new do
-      # wait a little for the new master
-      sleep WarmUpTime
+    if File.exists? OldPidFile
+      Thread.new do
+        # wait a little for the new master
+        sleep WarmUpTime
 
-      # a .oldbin file exists if unicorn was gracefully restarted with a USR2 signal
-      # we should terminate the old process now that we're up and running
-      old_pid = File.read(OldPidFile).to_i
-      begin
-        Process.kill "QUIT", old_pid
-        File.delete OldPidFile
-      rescue Errno::ENOENT, Errno::ESRCH
-        # someone else did our job for us
+        # a .oldbin file exists if unicorn was gracefully restarted with a USR2 signal
+        # we should terminate the old process now that we're up and running
+        old_pid = File.read(OldPidFile).to_i
+        begin
+          Process.kill "QUIT", old_pid
+          File.delete OldPidFile
+        rescue Errno::ENOENT, Errno::ESRCH
+          # someone else did our job for us
+        end
       end
     end
-  end
 
-  master_run = false
+    master_run = false
+  end
 end
 
 after_fork do |server, worker|
@@ -124,23 +122,20 @@ after_fork do |server, worker|
   if WorkerKiller
     Unicorn::WorkerKiller::MaxRequests.new nil, WorkerKillByRequests.begin, WorkerKillByRequests.end if WorkerKillByRequests
     Unicorn::WorkerKiller::Oom.new nil, WorkerKillByMemory.begin * (1024**2), WorkerKillByMemory.end * (1024**2) if WorkerKillByMemory
-  end
+  end unless daemon
 
   # say to the kernel to kill very big workers first than other processes
   # Not very secure
   #File.open("/proc/#{Process.pid}/oom_adj", "w"){ |f| f << '12' }
 
-  unless daemon
-    if WorkerListen
-      # per-process listener ports for debugging/admin/migrations
-      server.listen "#{ListenAddress}:#{ListenPort + worker.nr}", :tries => -1, :delay => 5
-    end
-    if WorkerPidFile
-      child_pid_file = server.config[:pid].sub '.pid', ".#{worker.nr}.pid"
-      system "echo #{Process.pid} > #{child_pid_file}"
-    end
+  if WorkerListen
+    # per-process listener ports for debugging/admin/migrations
+    server.listen "#{ListenAddress}:#{ListenPort + worker.nr}", :tries => -1, :delay => 5
+  end unless daemon
+  if WorkerPidFile
+    child_pid_file = server.config[:pid].sub '.pid', ".#{worker.nr}.pid"
+    system "echo #{Process.pid} > #{child_pid_file}"
   end
-
 end
 
 # daemons support
