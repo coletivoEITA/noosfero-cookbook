@@ -7,7 +7,7 @@ rvm_shell "noosfero-create-environment" do
   if env
     code <<-EOH
       export RAILS_ENV=#{node[:noosfero][:rails_env]}
-      script/runner '
+      rails runner '
         if (e = Environment.default).blank?
           e = Environment.create! :name => "#{env[:name]}", :is_default => true, :default_language => "#{env[:default_language]}"
           e.domains.create! :name => "#{env[:domain]}", :is_default => true
