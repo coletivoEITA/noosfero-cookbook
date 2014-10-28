@@ -80,7 +80,7 @@ main_script() {
   if [ "$1" = "restart" ]; then
     kill -USR2 `cat $NOOSFERO_DIR/tmp/pids/unicorn.pid` 2>&1 > /dev/null
   elif [ "$1" = "start" ]; then
-    noosfero_run bundle exec unicorn_rails -D -c config/unicorn.conf.rb -E <%= @rails_env %>
+    noosfero_run bundle exec unicorn -D -c config/unicorn.conf.rb -E <%= @rails_env %>
   elif [ "$1" = "stop" ]; then
     kill `cat $NOOSFERO_DIR/tmp/pids/unicorn.pid` 2>&1 > /dev/null
   fi

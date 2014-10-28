@@ -39,6 +39,7 @@ WorkerDaemons = {
   0 => {
     :name => 'delayed_job',
     :run => proc{
+      Delayed::Worker.before_fork
       Delayed::Command.new([]).run 'delayed_job'
     },
   },
@@ -139,7 +140,7 @@ after_fork do |server, worker|
 end
 
 # daemons support
-require 'active_support/core_ext/module'
+require 'active_support/all'
 class Unicorn::HttpServer
 
   def worker_loop_with_daemons worker
