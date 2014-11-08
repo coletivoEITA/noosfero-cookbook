@@ -3,6 +3,7 @@ Noosfero::Helpers.init
 
 include_recipe 'memcached'
 
+include_recipe 'noosfero::ruby'
 include_recipe 'noosfero::install'
 include_recipe 'noosfero::settings'
 include_recipe 'noosfero::plugins'

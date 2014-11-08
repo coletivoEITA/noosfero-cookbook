@@ -57,21 +57,23 @@ fi
 
 ######################
 
+<% exports = node[:noosfero][:service][:env].map{ |var, value| "export #{var}='#{value}'" } %>
+
 noosfero_run() {
   if [ "$NOOSFERO_USER" != "$USER" ]; then
   <% if @ruby_version %>
     su $NOOSFERO_USER -l -c "cd $NOOSFERO_DIR &&
       rvm use <%= @ruby_version %> &&
-      <%= node[:noosfero][:service][:env].map{ |var, value| "export #{var}='#{value}'" }.join "\n" %>
+      <%= exports.join "\n" %>
       $*"
   <% else %>
     su $NOOSFERO_USER -l -c "cd $NOOSFERO_DIR &&
-      <%= node[:noosfero][:service][:env].map{ |var, value| "export #{var}='#{value}'" }.join "\n" %>
+      <%= exports.join "\n" %>
       $*"
   <% end %>
   else
     cd $NOOSFERO_DIR && \
-      <%= node[:noosfero][:service][:env].map{ |var, value| "export #{var}='#{value}'" }.join "\n" %>
+      <%= exports.join("\\ \n") + "\\" %>
       $*
   fi
 }
