@@ -57,7 +57,7 @@ fi
 
 ######################
 
-<% exports = node[:noosfero][:service][:env].map{ |var, value| "export #{var}='#{value}'" } %>
+<% exports = node[:noosfero][:ruby][:env].map{ |var, value| "export #{var}='#{value}'" } %>
 
 noosfero_run() {
   if [ "$NOOSFERO_USER" != "$USER" ]; then

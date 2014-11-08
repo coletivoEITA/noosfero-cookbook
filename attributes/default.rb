@@ -1,9 +1,6 @@
 
 default[:noosfero][:service_name] = "noosfero"
 service_name = node[:noosfero][:service_name]
-default[:noosfero][:service][:env] = {
-  RUBY_GC_MALLOC_LIMIT: 90000000,
-}
 
 default[:noosfero][:rails_env] = "production"
 
