@@ -62,16 +62,16 @@ noosfero_run() {
   <% if @ruby_version %>
     su $NOOSFERO_USER -l -c "cd $NOOSFERO_DIR &&
       rvm use <%= @ruby_version %> &&
-      <%= node[:noosfero][:service][:env].map{ |var, value| "#{var}='#{value}'" }.join "\n" %>
+      <%= node[:noosfero][:service][:env].map{ |var, value| "export #{var}='#{value}'" }.join "\n" %>
       $*"
   <% else %>
     su $NOOSFERO_USER -l -c "cd $NOOSFERO_DIR &&
-      <%= node[:noosfero][:service][:env].map{ |var, value| "#{var}='#{value}'" }.join "\n" %>
+      <%= node[:noosfero][:service][:env].map{ |var, value| "export #{var}='#{value}'" }.join "\n" %>
       $*"
   <% end %>
   else
     cd $NOOSFERO_DIR && \
-      <%= node[:noosfero][:service][:env].map{ |var, value| "#{var}='#{value}'" }.join "\n" %>
+      <%= node[:noosfero][:service][:env].map{ |var, value| "export #{var}='#{value}'" }.join "\n" %>
       $*
   fi
 }
