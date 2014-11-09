@@ -8,5 +8,5 @@ default[:noosfero][:ruby][:env] = {
   #RUBY_FREE_MIN: 600000,
 }
 
-default[:noosfero][:ruby][:use_tcmalloc] = true
+default[:noosfero][:ruby][:allocator] = 'jemalloc'
 
