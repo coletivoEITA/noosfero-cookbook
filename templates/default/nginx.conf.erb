@@ -28,6 +28,14 @@ upstream <%= @service_name %> {
   server http://127.0.0.1:<%= @server['port'].to_i + i %>;
   <% end %>
   <% end %>
+
+  keepalive 64;
+}
+
+upstream <%= @service_name %>_cache {
+  server http://<%= @cache[:address] %>:<%= @cache[:port] %>;
+
+  keepalive 64;
 }
 
 server {
@@ -77,7 +85,7 @@ server {
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_redirect off;
     if ( $server_port = <%= @server[:proxy_port] %> ) {
-      proxy_pass http://<%= @cache[:address] %>:<%= @cache[:port] %>;
+      proxy_pass http://<%= @service_name %>_cache;
     }
   <% end %>
 
