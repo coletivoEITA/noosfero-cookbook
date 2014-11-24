@@ -4,6 +4,8 @@ service_name = node[:noosfero][:service_name]
 
 default[:noosfero][:rails_env] = "production"
 
+default[:noosfero][:version] = "1.0"
+
 default[:noosfero][:install_from] = "git"
 
 default[:noosfero][:user] = service_name
@@ -93,6 +95,7 @@ default[:noosfero][:cache][:key_zone] = 'main'
 default[:noosfero][:ssl] = {}
 default[:noosfero][:ssl][:enable] = false
 default[:noosfero][:ssl][:default] = true
+default[:noosfero][:ssl][:spdy] = true
 default[:noosfero][:ssl][:redirect_http] = true
 
 default[:noosfero][:server] = {}

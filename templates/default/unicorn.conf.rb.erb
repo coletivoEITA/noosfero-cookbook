@@ -39,7 +39,9 @@ WorkerDaemons = {
   0 => {
     :name => 'delayed_job',
     :run => proc{
+    <% if node[:noosfero][:version] > '1.0' %>
       Delayed::Worker.before_fork
+    <% end %>
       Delayed::Command.new([]).run 'delayed_job'
     },
   },

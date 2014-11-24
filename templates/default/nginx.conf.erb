@@ -1,7 +1,7 @@
 server {
   listen <%= @server[:proxy_port] %>;
   <% if @ssl[:enable] %>
-  listen 443 ssl;
+  listen 443 ssl <%= 'spdy' if @ssl[:spdy] %>;
   <% end %>
 
   server_name www.<%= @server_name %>;
@@ -12,7 +12,7 @@ server {
 server {
   listen <%= @server[:proxy_port] %>;
   <% if @ssl[:enable] %>
-  listen 443 ssl;
+  listen 443 ssl <%= 'spdy' if @ssl[:spdy] %>;
   <% end %>
 
   server_name www.<%= domain %>;
@@ -44,7 +44,7 @@ server {
   listen 127.0.0.1:<%= @server[:proxy_backend_port] %>;
   <% end %>
   <% if @ssl[:enable] %>
-  listen 443 <%= 'default_server' if @ssl[:default] %> ssl;
+  listen 443 ssl <%= 'default_server' if @ssl[:default] %> <%= 'spdy' if @ssl[:spdy] %>;
   <% end %>
 
   server_name <%= @server_name %> <%= @custom_domains.join ' ' %>;
@@ -54,6 +54,8 @@ server {
   <% if @ssl[:enable] %>
   ssl_certificate <%= @ssl[:certificate] %>;
   ssl_certificate_key <%= @ssl[:certificate_key] %>;
+  # only safe protocols
+  ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
   <% end %>
 
   access_log <%= @access_log_path %> combined;
@@ -64,6 +66,14 @@ server {
     rewrite ^ https://$host$uri last;
   }
   <% end %>
+
+  if (-f $document_root/maintenance.html) {
+    return 503;
+  }
+  error_page 503 @maintenance;
+  location @maintenance {
+    rewrite ^(.*)$ /maintenance.html break;
+  }
 
   location / {
   <% if not @server[:block_bots].empty? %>

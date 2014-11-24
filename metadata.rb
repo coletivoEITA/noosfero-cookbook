@@ -23,6 +23,7 @@ depends         'apache2', ">= 2.0.0"
 
 depends         'varnish'
 depends         'memcached'
+depends         'redis2'
 
 depends         'logrotate'
 
