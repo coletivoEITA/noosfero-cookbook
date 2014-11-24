@@ -1,4 +1,10 @@
-plugins = node[:noosfero][:plugins].sort
+if node[:noosfero][:plugins] == 'all'
+  cmd = Mixlib::ShellOut.new "sh -c 'cd #{node[:noosfero][:code_path]}/plugins && echo */'"
+  overview = cmd.run_command
+  plugins = overview.stdout.split("\n").first.gsub('/', '').split(' ').sort
+else
+  plugins = node[:noosfero][:plugins].sort
+end
 
 rvm_shell "noosfero-enabled-selected-plugins" do
   user node[:noosfero][:user]; group node[:noosfero][:group]
@@ -10,6 +16,8 @@ rvm_shell "noosfero-enabled-selected-plugins" do
   EOH
 
   notifies :restart, "service[#{node[:noosfero][:service_name]}]"
+  # install plugins' Gemfile
+  notifies :run, "rvm_shell[noosfero-bundle-install]"
 
   only_if do
     cmd = Mixlib::ShellOut.new "sh -c 'cd #{node[:noosfero][:code_path]}/config/plugins && echo */'"

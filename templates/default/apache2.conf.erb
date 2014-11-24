@@ -1,3 +1,5 @@
+# this is not complete as the nginx site, please use it as a reference
+
 <VirtualHost *:*>
     ServerName www.<%= @server_name %>
     RedirectMatch ^(.*)$ http://<%= @server_name %>$1
