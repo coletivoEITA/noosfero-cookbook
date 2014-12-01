@@ -7,6 +7,11 @@ logs = [
   'delayed_job.log',
 ]
 
+case node[:noosfero][:server][:backend]
+when 'unicorn'
+  logs += ['unicorn.stdout.log', 'unicorn.stderr.log']
+end
+
 logrotate_app node[:noosfero][:service_name] do
   enable true
   template_mode '0644'
@@ -23,11 +28,6 @@ logrotate_app node[:noosfero][:service_name] do
   #  sudo service #{node[:noosfero][:service_name]} restart
   #EOD
 end
-
-proxy_service = case node[:noosfero][:server][:proxy]
-                when 'apache' then 'apache2'
-                when 'nginx' then 'nginx'
-                end
 
 logrotate_app "#{node[:noosfero][:service_name]}_proxy" do
   enable true

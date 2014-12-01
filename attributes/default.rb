@@ -4,7 +4,7 @@ service_name = node[:noosfero][:service_name]
 
 default[:noosfero][:rails_env] = "production"
 
-default[:noosfero][:version] = "1.0"
+default[:noosfero][:version] = "1.0.0"
 
 default[:noosfero][:install_from] = "git"
 
@@ -107,7 +107,11 @@ default[:noosfero][:server][:proxy_to_cache] = node[:noosfero][:ssl][:enable] an
 default[:noosfero][:server][:timeout] =
   case node[:noosfero][:server][:backend]
   when 'thin' then 30
-  when 'unicorn' then 1200
+  when 'unicorn'
+    case node[:noosfero][:server][:proxy]
+    when 'apache' then 20*60
+    when 'nginx' then 60
+    end
   end
 default[:noosfero][:server][:proxy_port] =
   case node[:noosfero][:server][:proxy]
