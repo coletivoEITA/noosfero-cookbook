@@ -9,3 +9,4 @@ if node[:noosfero][:ssl][:spdy]
   default[:nginx][:default][:modules] = "http_spdy_module"
   default[:nginx][:source][:modules] = "nginx::http_spdy_module"
 end
+
