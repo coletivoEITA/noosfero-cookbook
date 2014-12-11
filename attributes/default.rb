@@ -13,6 +13,7 @@ default[:noosfero][:group] = service_name
 
 default[:noosfero][:server_name] = nil
 default[:noosfero][:custom_domains] = []
+default[:noosfero][:redirects] = {}
 
 default[:noosfero][:git_url] = "https://gitlab.com/noosfero/noosfero.git"
 default[:noosfero][:git_revision] = "stable"
