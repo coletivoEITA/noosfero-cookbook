@@ -3,7 +3,7 @@ server {
   listen <%= @server[:proxy_port] %>;
   <% if @ssl[:enable] %>
   listen 443 ssl <%= 'spdy' if @ssl[:spdy] %>;
-  ssl_protocols <%= @ssl[:protocols] %>
+  ssl_protocols <%= @ssl[:protocols] %>;
   <% end %>
 
   server_name www.<%= @server_name %>;
@@ -16,7 +16,7 @@ server {
   listen <%= @server[:proxy_port] %>;
   <% if @ssl[:enable] %>
   listen 443 ssl <%= 'spdy' if @ssl[:spdy] %>;
-  ssl_protocols <%= @ssl[:protocols] %>
+  ssl_protocols <%= @ssl[:protocols] %>;
   <% end %>
 
   server_name www.<%= domain %>;
@@ -30,7 +30,7 @@ server {
   listen <%= @server[:proxy_port] %>;
   <% if @ssl[:enable] %>
   listen 443 ssl <%= 'spdy' if @ssl[:spdy] %>;
-  ssl_protocols <%= @ssl[:protocols] %>
+  ssl_protocols <%= @ssl[:protocols] %>;
   <% end %>
 
   server_name <%=source%> <%= "www.#{source}" unless source.start_with? 'www.' %>;
@@ -64,19 +64,14 @@ server {
   <% end %>
   <% if @ssl[:enable] %>
   listen 443 ssl<%= ' spdy' if @ssl[:spdy] %><%= ' default_server' if @ssl[:default] %>;
-  ssl_protocols <%= @ssl[:protocols] %>
+  ssl_protocols <%= @ssl[:protocols] %>;
+  ssl_certificate <%= @ssl[:certificate] %>;
+  ssl_certificate_key <%= @ssl[:certificate_key] %>;
   <% end %>
 
   server_name <%= @server_name %> <%= @custom_domains.join ' ' %>;
   port_in_redirect off;
   root <%= @code_path %>/public;
-
-  <% if @ssl[:enable] %>
-  ssl_certificate <%= @ssl[:certificate] %>;
-  ssl_certificate_key <%= @ssl[:certificate_key] %>;
-  # only safe protocols
-  ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-  <% end %>
 
   <% if @ssl[:enable] and @ssl[:redirect_http] %>
   if ( $scheme = http ) {
