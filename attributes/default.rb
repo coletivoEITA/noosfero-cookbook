@@ -20,31 +20,6 @@ default[:noosfero][:git_revision] = "stable"
 
 default[:noosfero][:upgrade_script] = ''
 
-default[:noosfero][:paths_in_code] = false
-default[:noosfero][:path] = nil
-default[:noosfero][:code_path] = node[:noosfero][:path] if node[:noosfero][:path]
-default[:noosfero][:user_install] = !node[:noosfero][:path].empty?
-
-if node[:noosfero][:paths_in_code]
-  %w[ config log run tmp ].each do |dir|
-    default[:noosfero]["#{dir}_path"] = "#{node[:noosfero][:code_path]}/#{dir}"
-  end
-elsif node[:noosfero][:user_install]
-  %w[ data config log run tmp ].each do |dir|
-    default[:noosfero]["#{dir}_path"] = "/home/#{node[:noosfero][:user]}/#{dir}"
-  end
-else
-  default[:noosfero][:code_path] = "/usr/share/#{service_name}"
-  default[:noosfero][:data_path] = "/var/lib/#{service_name}"
-  default[:noosfero][:config_path] = "/etc/#{service_name}"
-  default[:noosfero][:log_path] = "/var/log/#{service_name}"
-  default[:noosfero][:run_path] = "/var/run/#{service_name}"
-  default[:noosfero][:tmp_path] = "/var/tmp/#{service_name}"
-end
-
-default[:noosfero][:access_log_path] = "#{node[:noosfero][:log_path]}/access.log"
-default[:noosfero][:error_log_path] = "#{node[:noosfero][:log_path]}/error.log"
-
 default[:noosfero][:db] = {}
 default[:noosfero][:db][:name] = service_name
 default[:noosfero][:db][:hostname] = 'localhost'

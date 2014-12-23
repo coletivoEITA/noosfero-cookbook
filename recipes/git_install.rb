@@ -19,7 +19,7 @@ end
 
 # Directories
 unless node[:noosfero][:paths_in_code]
-  %w[ code_path data_path config_path log_path run_path tmp_path ].each do |path|
+  %w[ code_path data_path config_path log_path run_path tmp_path pids_path ].each do |path|
     directory node[:noosfero][path] do
       user node[:noosfero][:user]; group node[:noosfero][:group]
     end
