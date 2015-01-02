@@ -6,7 +6,8 @@
 # No change is needed to support multitenancy. Only one solr environment will be used.
 # Just remember to use 'rake multitenancy:reindex' for reindexation.
 
-<%= @rails_env %>:
-  url: http://<%= @plugins_settings['solr']['address'] %>:<%= @plugins_settings['solr']['port'] %>/solr
-  jvm_options: -server -Xmx<%= @plugins_settings['solr']['memory'] %>M -Xms64M
-  timeout: <%= @plugins_settings['solr']['timeout'] %>
+<%= @site.rails.env %>:
+  url: http://<%= @site.plugins.settings[:solr][:address] %>:<%= @site.plugins.settings[:solr][:port] %>/solr
+  jvm_options: -server -Xmx<%= @site.plugins.settings[:solr][:memory] %>M -Xms64M
+  timeout: <%= @site.plugins.settings[:solr][:timeout] %>
+

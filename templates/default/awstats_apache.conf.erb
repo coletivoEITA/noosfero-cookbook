@@ -2,6 +2,6 @@
   ServerName <%= @domain %>
 
   Include <%= node[:awstats][:apache_conf_filename] %>
-  RedirectMatch ^/$ /awstats/awstats.pl?config=<%= node[:noosfero][:server_name] %>
+  RedirectMatch ^/$ /awstats/awstats.pl?config=<%= @site.server_name %>
 </VirtualHost>
 

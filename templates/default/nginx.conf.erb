@@ -1,22 +1,22 @@
 ## MAIN ADDRESS wwW REMOVAL
 server {
-  listen <%= @server[:proxy_port] %>;
-  <% if @ssl[:enable] %>
-  listen 443 ssl <%= 'spdy' if @ssl[:spdy] %>;
-  ssl_protocols <%= @ssl[:protocols] %>;
+  listen <%= @site.server.proxy.port %>;
+  <% if @site.server.ssl %>
+  listen 443 ssl <%= 'spdy' if @site.server.ssl.spdy %>;
+  ssl_protocols <%= @site.server.ssl.protocols %>;
   <% end %>
 
-  server_name www.<%= @server_name %>;
-  rewrite ^ $scheme://<%= @server_name %>$request_uri?;
+  server_name www.<%= @site.server_name %>;
+  rewrite ^ $scheme://<%= @site.server_name %>$request_uri?;
 }
 
 ## CUSTOM DOMAINS WWW REMOVAL
-<% @custom_domains.each do |domain| %>
+<% @site.custom_domains.each do |domain| %>
 server {
-  listen <%= @server[:proxy_port] %>;
-  <% if @ssl[:enable] %>
-  listen 443 ssl <%= 'spdy' if @ssl[:spdy] %>;
-  ssl_protocols <%= @ssl[:protocols] %>;
+  listen <%= @site.server.proxy.port %>;
+  <% if @site.server.ssl %>
+  listen 443 ssl <%= 'spdy' if @site.server.ssl.spdy %>;
+  ssl_protocols <%= @site.server.ssl.protocols %>;
   <% end %>
 
   server_name www.<%= domain %>;
@@ -25,12 +25,12 @@ server {
 <% end %>
 
 ## REDIRECTS
-<% @redirects.each do |source, destination| %>
+<% @site.redirects.each do |source, destination| %>
 server {
-  listen <%= @server[:proxy_port] %>;
-  <% if @ssl[:enable] %>
-  listen 443 ssl <%= 'spdy' if @ssl[:spdy] %>;
-  ssl_protocols <%= @ssl[:protocols] %>;
+  listen <%= @site.server.proxy.port %>;
+  <% if @site.server.ssl %>
+  listen 443 ssl <%= 'spdy' if @site.server.ssl.spdy %>;
+  ssl_protocols <%= @site.server.ssl.protocols %>;
   <% end %>
 
   server_name <%=source%> <%= "www.#{source}" unless source.start_with? 'www.' %>;
@@ -39,41 +39,41 @@ server {
 }
 <% end %>
 
-upstream <%= @service_name %> {
-  <% if @server[:backend] == 'unicorn' %>
-  server unix:<%= @run_path %>/unicorn.sock;
-  <% elsif @server[:backend] == 'thin' %>
-  <% @server[:workers].times.each do |i| %>
-  server http://127.0.0.1:<%= @server['port'].to_i + i %>;
+upstream <%= @site.service_name %> {
+  <% if @site.server.unicorn? %>
+  server unix:<%= @site.run_path %>/unicorn.sock;
+  <% elsif @site.server.thin? %>
+  <% @site.server.workers.times.each do |i| %>
+  server http://127.0.0.1:<%= @site.server.port + i %>;
   <% end %>
   <% end %>
 
   keepalive 64;
 }
 
-upstream <%= @service_name %>_cache {
-  server <%= @cache[:address] %>:<%= @cache[:port] %>;
+upstream <%= @site.service_name %>_cache {
+  server <%= @site.server.cache.address %>:<%= @site.server.cache.port %>;
 
   keepalive 64;
 }
 
 server {
-  listen <%= @server[:proxy_port] %>;
-  <% if @server[:proxy_to_cache] %>
-  listen 127.0.0.1:<%= @server[:proxy_backend_port] %>;
+  listen <%= @site.server.proxy.port %>;
+  <% if @site.server.proxy.to_cache %>
+  listen 127.0.0.1:<%= @site.server.proxy.backend_port %>;
   <% end %>
-  <% if @ssl[:enable] %>
-  listen 443 ssl<%= ' spdy' if @ssl[:spdy] %><%= ' default_server' if @ssl[:default] %>;
-  ssl_protocols <%= @ssl[:protocols] %>;
-  ssl_certificate <%= @ssl[:certificate] %>;
-  ssl_certificate_key <%= @ssl[:certificate_key] %>;
+  <% if @site.server.ssl %>
+  listen 443 ssl<%= ' spdy' if @site.server.ssl.spdy %><%= ' default_server' if @site.server.ssl.default %>;
+  ssl_protocols <%= @site.server.ssl.protocols %>;
+  ssl_certificate <%= @site.server.ssl.certificate %>;
+  ssl_certificate_key <%= @site.server.ssl.certificate_key %>;
   <% end %>
 
-  server_name <%= @server_name %> <%= @custom_domains.join ' ' %>;
+  server_name <%= @site.server_name %> <%= @site.custom_domains.join ' ' %>;
   port_in_redirect off;
-  root <%= @code_path %>/public;
+  root <%= @site.code_path %>/public;
 
-  <% if @ssl[:enable] and @ssl[:redirect_http] %>
+  <% if @site.server.ssl and @site.server.ssl.redirect_http %>
   if ( $scheme = http ) {
     rewrite ^ https://$host$uri last;
   }
@@ -82,44 +82,44 @@ server {
   if (-f $document_root/maintenance.html) {
     return 503;
   }
-  error_page 503 @maintenance;
-  location @maintenance {
+  error_page 503 @site.maintenance;
+  location @site.maintenance {
     rewrite ^(.*)$ /maintenance.html break;
   }
 
   location / {
-  <% if not @server[:block_bots].empty? %>
+  <% if not @site.server.block_bots.empty? %>
     if ($http_user_agent = "") {
       return 403;
     }
     if ($http_user_agent = "-") {
       return 403;
     }
-    if ($http_user_agent ~ (<%= @server[:block_bots].join '|' %>) ) {
+    if ($http_user_agent ~ (<%= @site.server.block_bots.join '|' %>) ) {
       return 403;
     }
   <% end %>
 
-  <% if @server[:proxy_to_cache] %>
+  <% if @site.server.proxy.to_cache %>
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $remote_addr;
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_redirect off;
     # check if request comes from the user and not from cache server back to the backend
-    if ( $server_port = <%= @server[:proxy_port] %> ) {
-      proxy_pass http://<%= @service_name %>_cache;
+    if ( $server_port = <%= @site.server.proxy.port %> ) {
+      proxy_pass http://<%= @site.service_name %>_cache;
     }
   <% end %>
 
-    access_log <%= @access_log_path %> combined;
-    error_log <%= @error_log_path %>;
+    access_log <%= @site.access_log_path %> combined;
+    error_log <%= @site.error_log_path %>;
 
-    try_files index.html $uri @proxy;
+    try_files index.html $uri @site.proxy;
   }
 
-  location @proxy {
-  <% if @server['backend'] == 'unicorn' %>
+  location @site.proxy {
+  <% if @site.server.unicorn? %>
     proxy_buffers               4 256k;
     proxy_buffer_size           256k;
     proxy_busy_buffers_size     256k;
@@ -130,11 +130,11 @@ server {
     proxy_set_header X-Forwarded-For $remote_addr;
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_set_header Host $host;
-    proxy_pass http://<%= @service_name %>;
+    proxy_pass http://<%= @site.service_name %>;
 
-  <% if @cache[:server] == 'proxy' %>
-    proxy_cache <%= @cache[:key_zone] %>;
-    proxy_cache_valid 200 <%= @cache[:expires] %>;
+  <% if @site.server.cache.with == 'proxy' %>
+    proxy_cache <%= @site.server.cache.key_zone %>;
+    proxy_cache_valid 200 <%= @site.server.cache.expires %>;
   <% end %>
   }
 }

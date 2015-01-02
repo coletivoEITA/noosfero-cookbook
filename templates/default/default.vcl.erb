@@ -6,11 +6,11 @@
 #
 backend default {
     .host = "127.0.0.1";
-    .port = "<%= node[:noosfero][:cache][:backend_port] %>";
+    .port = "<%= @site.server.cache.backend_port %>";
 }
 
-include "<%= "#{node[:noosfero][:code_path]}/etc/noosfero/varnish-noosfero.vcl" %>";
-include "<%= "#{node[:noosfero][:code_path]}/etc/noosfero/varnish-accept-language.vcl" %>";
+include "<%= "#{@site.code_path}/etc/noosfero/varnish-noosfero.vcl" %>";
+include "<%= "#{@site.code_path}/etc/noosfero/varnish-accept-language.vcl" %>";
 
 #
 # Below is a commented-out copy of the default VCL logic.  If you

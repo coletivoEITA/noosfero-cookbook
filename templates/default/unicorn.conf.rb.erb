@@ -1,19 +1,19 @@
-RailsRoot = "<%= @code_path %>"
+RailsRoot = "<%= @site.code_path %>"
 PidsDir = "#{RailsRoot}/tmp/pids"
 OldPidFile = "#{PidsDir}/unicorn.pid.oldbin"
 
 ListenAddress = "127.0.0.1"
-ListenPort = <%= @server[:port] %>
+ListenPort = <%= @site.server.port %>
 UnixListen = "run/unicorn.sock"
-Backlog = <%= @server[:backlog] %>
+Backlog = <%= @site.server.backlog %>
 
-Workers = <%= @server[:workers] %>
-Timeout = <%= @server[:timeout] %>
+Workers = <%= @site.server.workers %>
+Timeout = <%= @site.server.timeout %>
 
 WarmUp = true
-WarmUpTime = <%= @server[:warmup_time] %>
+WarmUpTime = <%= @site.server.warmup_time %>
 # caution use non cacheable urls
-WarmUpUrl = <%= @server[:warmup_urls] %>
+WarmUpUrl = <%= @site.server.warmup_urls %>
 
 CurrentPrio = Process.getpriority Process::PRIO_PROCESS, 0
 # put "* - nice 0" on /etc/security/limits.conf to enable
@@ -26,8 +26,8 @@ begin
 rescue LoadError
   WorkerKiller = nil
 end
-WorkerKillByRequests = <%= @server[:restart_on_requests].first %>..<%= @server[:restart_on_requests].last %>
-WorkerKillByMemory = <%= @server[:restart_on_memory].first %>..<%= @server[:restart_on_memory].last %>
+WorkerKillByRequests = <%= @site.server.restart_on_requests.first %>..<%= @site.server.restart_on_requests.last %>
+WorkerKillByMemory = <%= @site.server.restart_on_memory.first %>..<%= @site.server.restart_on_memory.last %>
 
 # FIXME: this makes the worker too big and activate Unicorn::WorkerKiller::Oom
 WorkerOutOfBandGcFrequency = nil
@@ -39,13 +39,13 @@ WorkerDaemons = {
   0 => {
     :name => 'delayed_job',
     :run => proc{
-    <% if node[:noosfero][:version] >= '1.0' %>
+    <% if @site.version >= '1.0' %>
       Delayed::Worker.before_fork
     <% end %>
       Delayed::Command.new([]).run 'delayed_job'
     },
   },
-<% if @server[:feed_updater][:enable] %>
+<% if @site.server.feed_updater_enabled %>
   1 => {
     :name => 'feed-updater',
     :run => proc{

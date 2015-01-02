@@ -10,6 +10,8 @@ version          '2.7.5'
   supports os
 end
 
+#depends         'poise'
+
 depends         'rvm'
 depends         'java'
 

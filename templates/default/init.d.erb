@@ -25,14 +25,14 @@
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="Noosfero web platform"
-NAME=<%= @service_name %>
+NAME=<%= @site.service_name %>
 SCRIPTNAME=/etc/init.d/$NAME
 
 # default values
-NOOSFERO_DIR=<%= @code_path %>
-NOOSFERO_USER=<%= @user %>
+NOOSFERO_DIR=<%= @site.code_path %>
+NOOSFERO_USER=<%= @site.user %>
 
-<% if @server['backend'] == 'unicorn' %>
+<% if @site.server.unicorn? %>
 PIDFILE="$NOOSFERO_DIR/tmp/pids/unicorn.pid"
 <% else %>
 PIDFILE="$NOOSFERO_DIR/tmp/pids/delayed_job.pid"
@@ -57,44 +57,43 @@ fi
 
 ######################
 
-<% exports = node[:noosfero][:ruby][:env].map{ |var, value| "export #{var}='#{value}'" } %>
+<% exports = @site.ruby.env.map{ |var, value| "export #{var}='#{value}'" } %>
 
 noosfero_run() {
   if [ "$NOOSFERO_USER" != "$USER" ]; then
-  <% if @ruby_version %>
     su $NOOSFERO_USER -l -c "cd $NOOSFERO_DIR &&
-      rvm use <%= @ruby_version %> &&
+    <% if @site.ruby.rvm? %>
+      rvm use <%= @site.ruby.version %> &&
+    <% end %>
       <%= exports.join "\n" %>
       $*"
-  <% else %>
-    su $NOOSFERO_USER -l -c "cd $NOOSFERO_DIR &&
-      <%= exports.join "\n" %>
-      $*"
-  <% end %>
   else
     cd $NOOSFERO_DIR && \
-      <%= exports.join("\\ \n") + "\\" %>
+    <% if @site.ruby.rvm? %>
+      rvm use <%= @site.ruby.version %> &&
+    <% end %>
+      <%= exports.join "\n" %>
       $*
   fi
 }
 
 main_script() {
-<% if @plugins.include? 'solr' %>
+<% if @site.plugins.list.include? 'solr' %>
   # WARN: Solr doesn't need a restart
   if [ "$1" != "restart" ]; then
-    noosfero_run RAILS_ENV=<%= @rails_env %> rake solr:$1
+    noosfero_run RAILS_ENV=<%= @site.rails.env %> rake solr:$1
   fi
 <% end %>
-<% if @server['backend'] == 'unicorn' %>
+<% if @site.server.unicorn? %>
   if [ "$1" = "restart" ]; then
     kill -USR2 `cat $NOOSFERO_DIR/tmp/pids/unicorn.pid` 2>&1 > /dev/null
   elif [ "$1" = "start" ]; then
-    noosfero_run bundle exec <%=node[:noosfero][:unicorn][:bin]%> -D -c config/unicorn.conf.rb -E <%= @rails_env %>
+    noosfero_run bundle exec <%=@site.server.unicorn_bin%> -D -c config/unicorn.conf.rb -E <%= @site.rails.env %>
   elif [ "$1" = "stop" ]; then
     kill `cat $NOOSFERO_DIR/tmp/pids/unicorn.pid` 2>&1 > /dev/null
   fi
 <% else %>
-  noosfero_run script/<%= @rails_env %> $1
+  noosfero_run script/<%= @site.rails.env %> $1
 <% end %>
 }
 

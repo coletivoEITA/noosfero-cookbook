@@ -1,11 +1,11 @@
 ---
 address: 127.0.0.1
-port: <%= @server['port'] %>
-servers: <%= @server['workers'] %>
-timeout: <%= @server['timeout'] %>
+port: <%= @site.server.port %>
+servers: <%= if @site.server.unicorn? then 0 else @site.server.workers end %>
+timeout: <%= @site.server.timeout %>
 user: noosfero
 log: log/thin.log
 pid: tmp/pids/thin.pid
-environment: <%= @rails_env %>
+environment: <%= @site.rails.env %>
 daemonize: true
-chdir: <%= @code_path %>
+chdir: <%= @site.code_path %>

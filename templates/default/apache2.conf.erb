@@ -1,28 +1,28 @@
 # this is not complete as the nginx site, please use it as a reference
 
 <VirtualHost *:*>
-    ServerName www.<%= @server_name %>
-    RedirectMatch ^(.*)$ http://<%= @server_name %>$1
+    ServerName www.<%= @site.server_name %>
+    RedirectMatch ^(.*)$ http://<%= @site.server_name %>$1
 </VirtualHost>
 
-<% @custom_domains.each do |domain| %>
+<% @site.custom_domains.each do |domain| %>
 <VirtualHost *:*>
     ServerName www.<%= domain %>
     RedirectMatch ^(.*)$ http://<%= domain %>$1
 </VirtualHost>
 <% end %>
 
-<VirtualHost *:<%= @server[:proxy_port] %>>
-  ServerName <%= @server_name %>
-  <% @custom_domains.each do |domain| %>
+<VirtualHost *:<%= @site.server.proxy.port %>>
+  ServerName <%= @site.server_name %>
+  <% @site.custom_domains.each do |domain| %>
   ServerAlias <%= domain %>
   <% end %>
 
-  DocumentRoot "<%= "#{@code_path}/public" %>"
-  <Directory "<%= "#{@code_path}/public" %>">
+  DocumentRoot "<%= "#{@site.code_path}/public" %>"
+  <Directory "<%= "#{@site.code_path}/public" %>">
     Options +FollowSymLinks
     AllowOverride None
-  <% if node[:apache][:version] == '2.4' %>
+  <% if node.apache.version == '2.4' %>
     Require all granted
   <% else %>
     Order Allow,Deny
@@ -33,8 +33,8 @@
   ProxyPreserveHost On
   RewriteEngine On
 
-  <% if not @server[:block_bots].empty? %>
-  RewriteCond %{HTTP_USER_AGENT} (?:<%= @server[:block_bots].join '|' %>) [NC]
+  <% if not @site.server.block_bots.empty? %>
+  RewriteCond %{HTTP_USER_AGENT} (?:<%= @site.server.block_bots.join '|' %>) [NC]
   RewriteRule ^.*$ - [F]
   <% end %>
 
@@ -45,46 +45,46 @@
   RewriteRule ^([^.]+)$ $1.html [QSA]
 
   RewriteCond %{DOCUMENT_ROOT}/%{REQUEST_FILENAME} !-f
-  RewriteRule ^/(.*)$ balancer://<%= @service_name %>%{REQUEST_URI} [P,QSA,L]
-  <Proxy balancer://<%= @service_name %>>
+  RewriteRule ^/(.*)$ balancer://<%= @site.service_name %>%{REQUEST_URI} [P,QSA,L]
+  <Proxy balancer://<%= @site.service_name %>>
     Allow from any
-    <% if @server['backend'] == 'unicorn' %>
-    BalancerMember unix:<%= @run_path %>/unicorn.sock
-    <% elsif @server['backend'] == 'thin' %>
-    <% @server['workers'].times.each do |i| %>
-    BalancerMember http://127.0.0.1:<%= @server['port'].to_i + i %>
+    <% if @site.server['backend'] == 'unicorn' %>
+    BalancerMember unix:<%= @site.run_path %>/unicorn.sock
+    <% elsif @site.server['backend'] == 'thin' %>
+    <% @site.server['workers'].times.each do |i| %>
+    BalancerMember http://127.0.0.1:<%= @site.server['port'].to_i + i %>
     <% end %>
     <% end %>
   </Proxy>
 
   ErrorDocument 503 /503.html
 
-  ErrorLog <%= @error_log_path %>
+  ErrorLog <%= @site.error_log_path %>
   LogLevel warn
-  CustomLog <%= @access_log_path %> combined
+  CustomLog <%= @site.access_log_path %> combined
 
-  Include <%= @code_path %>/etc/noosfero/apache/cache.conf
+  Include <%= @site.code_path %>/etc/noosfero/apache/cache.conf
 
 </VirtualHost>
 
-<% if @ssl[:enable] %>
+<% if @site.ssl.enable %>
 <VirtualHost *:443>
-  ServerName <%= @server_name %>
-  <% @custom_domains.each do |domain| %>
+  ServerName <%= @site.server_name %>
+  <% @site.custom_domains.each do |domain| %>
   ServerAlias <%= domain %>
   <% end %>
 
   SSLEngine on
   SSLProxyEngine On
-  SSLCertificateFile <%= @ssl[:certificate] %>;
-  SSLCertificateKeyFile <%= @ssl[:certificate_key] %>;
-  SSLCertificateChainFile <%= @ssl[:certificate_chain] %>;
+  SSLCertificateFile <%= @site.server.ssl.certificate %>;
+  SSLCertificateKeyFile <%= @site.server.ssl.certificate_key %>;
+  SSLCertificateChainFile <%= @site.server.ssl.certificate_chain %>;
   SSLVerifyClient None
 
   RewriteEngine On
   ProxyPreserveHost On
   # http proxy
-  RewriteRule ^.*$ http://127.0.0.1:<% @server[:proxy_port] %>%{REQUEST_URI} [P,QSA,L]
+  RewriteRule ^.*$ http://127.0.0.1:<% @site.server.proxy.port %>%{REQUEST_URI} [P,QSA,L]
 
 </VirtualHost>
 <% end %>

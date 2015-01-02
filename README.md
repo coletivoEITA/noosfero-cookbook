@@ -232,10 +232,6 @@ Just include `noosfero` in your node's `run_list`, the below configuration is an
 }
 ```
 
-TODO
-----
-- Support others besides RVM (rbenv), by replacing rvm_shell with a generic noosfero_shell
-
 Contributing
 ------------
 1. Fork the repository on Github

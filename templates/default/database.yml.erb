@@ -1,9 +1,9 @@
-<%= @rails_env %>:
+<%= @site.rails.env %>:
   adapter: postgresql
   encoding: unicode
-  database: <%= @db['name'] %>
-  username: <%= @db['username'] %>
-  password: <%= @db['password'] %>
-  host: <%= @db['host'] %>
-  port: <%= @db['port'] %>
+  database: <%= @site.db.name %>
+  username: <%= @site.db.username %>
+  password: <%= @site.db.password %>
+  host: <%= @site.db.host %>
+  port: <%= @site.db.port %>
 

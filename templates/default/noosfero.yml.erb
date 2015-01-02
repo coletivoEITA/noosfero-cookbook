@@ -1,2 +1,2 @@
-<%= @rails_env %>:
-  <%= JSON.parse(@settings.to_json).to_yaml.split("\n")[1..-1].join("\n  ") %>
+<%= @site.rails.env %>:
+  <%= JSON.parse(@site.settings.to_json).to_yaml.split("\n")[1..-1].join("\n  ") %>
