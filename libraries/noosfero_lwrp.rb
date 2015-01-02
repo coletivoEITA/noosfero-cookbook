@@ -6,7 +6,7 @@ class NoosferoResource < Chef::Resource::LWRPBase
   # shortcut to boolean type
   Boolean = [TrueClass, FalseClass]
 
-  HIDDEN_IVARS += [:@site, @_visited]
+  HIDDEN_IVARS += [:@site, :@_visited]
 
   # override on subclasses
   self.resource_name = nil
