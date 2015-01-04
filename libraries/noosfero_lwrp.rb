@@ -51,7 +51,7 @@ class NoosferoResource < Chef::Resource::LWRPBase
   # Translate hash attributes into child resources
   # So that we can just import node attributes as follow
   #   node[:noosfero][:sites].each do |site, values|
-  #     noosfero_site values[:service_name] do
+  #     noosfero_site site do
   #       values.each do |attr, value|
   #         send attr, value
   #       end
@@ -101,6 +101,10 @@ end
 class NoosferoProvider < Chef::Provider::LWRPBase
   # as an application we need notifies
   #use_inline_resources if defined? use_inline_resources
+
+  def whyrun_supported?
+    true
+  end
 
   # shortcut
   alias_method :r, :new_resource
