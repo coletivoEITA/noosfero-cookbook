@@ -6,8 +6,6 @@ class NoosferoResource < Chef::Resource::LWRPBase
   # shortcut to boolean type
   Boolean = [TrueClass, FalseClass]
 
-  HIDDEN_IVARS += [:@site, :@_visited]
-
   # override on subclasses
   self.resource_name = nil
   # defaults
@@ -36,27 +34,8 @@ class NoosferoResource < Chef::Resource::LWRPBase
     res
   end
 
-  # Translate hash attributes into child resources
-  # So that we can just import node attributes as follow
-  #   node[:noosfero][:sites].each do |site, values|
-  #     noosfero_site values[:service_name] do
-  #       values.each do |attr, value|
-  #         send attr, value
-  #       end
-  #     end
-  #   end
-  def set_or_return attr, arg, validation
-    if arg and arg.is_a? Hash and validation[:kind_of] <= Chef::Resource::LWRPBase
-      res = self.child_resource attr do
-        arg.each{ |a, v| send a, v }
-      end
-      super attr, res, validation
-    else
-      super attr, arg, validation
-    end
-  end
-
   # avoid infinite recursion between parent/child
+  HIDDEN_IVARS += [:@site, :@_visited]
   %w[ to_text inspect as_json to_hash ].each do |method|
     define_method method do |*args|
       return if @_visited
@@ -68,6 +47,40 @@ class NoosferoResource < Chef::Resource::LWRPBase
   end
 
   protected
+
+  # Translate hash attributes into child resources
+  # So that we can just import node attributes as follow
+  #   node[:noosfero][:sites].each do |site, values|
+  #     noosfero_site values[:service_name] do
+  #       values.each do |attr, value|
+  #         send attr, value
+  #       end
+  #     end
+  #   end
+  def set_or_return symbol, arg, validation
+    kind_of = validation[:kind_of]
+    resource_type = kind_of.is_a?(Class) && kind_of <= Chef::Resource::LWRPBase
+
+    unless resource_type
+      # deep merge attributes, as done with node attributes
+      default = validation[:default]
+      if arg and default and (arg.is_a? Hash or arg.is_a? Array)
+        default = default.call self if default.is_a? Chef::DelayedEvaluator
+        # uses to_hash from helpers.rb as arg may come from node attributes which is immutable
+        arg = arg.to_hash if arg.is_a? Hash
+        arg = Chef::Mixin::DeepMerge.deep_merge default, arg
+      end
+    end
+
+    if arg and arg.is_a? Hash and resource_type
+      res = self.child_resource symbol do
+        arg.each{ |a, v| send a, v }
+      end
+      super symbol, res, validation
+    else
+      super symbol, arg, validation
+    end
+  end
 
   # delegate missing methods to site
   def method_missing method, *args, &block

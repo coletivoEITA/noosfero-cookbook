@@ -18,6 +18,7 @@ class Chef
         timeout: 600,
       },
     }
+
   end
 
   class Provider::NoosferoPlugins < NoosferoProvider

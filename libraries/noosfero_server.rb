@@ -9,7 +9,7 @@ class Chef
 
     attribute :block_bots, kind_of: Array, default: ['msnbot', 'Purebot', 'Baiduspider', 'Lipperhey', 'Mail.Ru', 'scrapbot']
 
-    attribute :feed_updater_enabled, kind_of: Integer, default: true
+    attribute :feed_updater_enabled, kind_of: Boolean, default: true
 
     attribute :backend, kind_of: String, default: 'thin', equal_to: ['thin', 'unicorn']
     attribute :workers, kind_of: Integer, default: 4
