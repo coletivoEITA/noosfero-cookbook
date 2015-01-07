@@ -52,7 +52,7 @@ class Chef
         if r.create_from_dump.present?
           notifies :load_dump, r, :immediately
         else
-          notifies :schema_load, r, :immediaetly
+          notifies :schema_load, r, :immediately
           notifies :create, r.environment, :immediately if r.environment
         end
 
