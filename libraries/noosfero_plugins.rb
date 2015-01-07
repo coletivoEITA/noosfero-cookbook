@@ -23,6 +23,11 @@ class Chef
 
   class Provider::NoosferoPlugins < NoosferoProvider
 
+    # FIXME: whyrun not supported if code is not yet fetched
+    def whyrun_supported?
+      false
+    end
+
     action :enable do
       # FIXME: r cannot be seen inside shell block
       r = new_resource
