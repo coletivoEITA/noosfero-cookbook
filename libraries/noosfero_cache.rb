@@ -22,10 +22,20 @@ class Chef
       end
     end)
 
-    # varnish
-    attribute :backend_port, kind_of: Integer, default: lazy{ |r| r.server.proxy_port }
+    # for varnish
+    attribute :backend_port, kind_of: Integer, default: (lazy do |r|
+      if r.server.proxy
+        if r.server.proxy.to_cache
+          r.server.proxy.port
+        else
+          r.server.port
+        end
+      else
+        node[:varnish][:backend_port]
+      end
+    end)
 
-    # nginx
+    # for nginx
     attribute :key_zone, kind_of: String, default: 'main'
   end
 

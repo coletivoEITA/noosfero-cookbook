@@ -5,12 +5,14 @@
 # server.
 #
 backend default {
-    .host = "127.0.0.1";
-    .port = "<%= @site.server.cache.backend_port %>";
+  .host = "127.0.0.1";
+  .port = "<%= node[:noosfero][:varnish][:backend_port] %>";
 }
 
-include "<%= "#{@site.code_path}/etc/noosfero/varnish-noosfero.vcl" %>";
-include "<%= "#{@site.code_path}/etc/noosfero/varnish-accept-language.vcl" %>";
+<% Array(node[:noosfero][:varnish][:includes]).each do |vcl| %>
+include "<%= vcl %>";
+<% end %>
+
 
 #
 # Below is a commented-out copy of the default VCL logic.  If you
