@@ -141,7 +141,7 @@ class Chef
         end
       end
 
-      %w[ log run tmp tmp/pids ].each do |dir|
+      %w[ log run tmp ].each do |dir|
         link "#{r.code_path}/#{dir}" do
           to r.send("#{dir}_path")
           not_if{ r.paths_in_code }
