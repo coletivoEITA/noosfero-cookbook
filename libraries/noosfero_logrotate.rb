@@ -15,6 +15,9 @@ class Chef
   class Provider::NoosferoLogrotate < NoosferoProvider
 
     action :configure do
+      # FIXME: r cannot be seen inside blocks
+      r = new_resource
+
       run_context.include_recipe 'logrotate'
 
       logs = [
