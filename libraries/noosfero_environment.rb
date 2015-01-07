@@ -15,6 +15,9 @@ class Chef
   class Provider::NoosferoEnvironment < NoosferoProvider
 
     action :create do
+      # FIXME: r cannot be seen inside shell block
+      r = new_resource
+
       shell "#{r.service_name}-create-environment" do
         code <<-EOH
 export RAILS_ENV=#{r.rails.env}

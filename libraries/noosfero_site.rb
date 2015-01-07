@@ -55,17 +55,19 @@ class Chef
     attribute :ruby, kind_of: NoosferoResource, default: lazy{ |r| r.child_resource :ruby }
     attribute :rails, kind_of: NoosferoResource, default: lazy{ |r| r.child_resource :rails }
 
-    attribute :server, kind_of: NoosferoResource, default: lazy{ |r| r.child_resource :server }
-    attribute :db, kind_of: NoosferoResource, default: lazy{ |r| r.child_resource :db }
-    attribute :plugins, kind_of: NoosferoResource, default: nil
-
     # use one of these to install noosfero
     attribute :git, kind_of: NoosferoResource, default: nil
     attribute :package, kind_of: NoosferoResource, default: nil
 
+    attribute :db, kind_of: NoosferoResource, default: lazy{ |r| r.child_resource :db }
     attribute :dependencies, kind_of: NoosferoResource, default: lazy{ |r| r.child_resource :dependencies }
 
+    # called by db on new db creation
     attribute :environment, kind_of: NoosferoResource, default: nil
+
+    attribute :plugins, kind_of: NoosferoResource, default: nil
+    attribute :server, kind_of: NoosferoResource, default: lazy{ |r| r.child_resource :server }
+
     attribute :logrotate, kind_of: NoosferoResource, default: nil
     attribute :awstats, kind_of: NoosferoResource, default: nil
     attribute :backup, kind_of: NoosferoResource, default: nil
@@ -76,7 +78,6 @@ class Chef
 
     action :configure do
       create_user if r.user_install
-      create_directories
       define_base_resources
 
       r.ruby.run_action :configure
@@ -85,8 +86,10 @@ class Chef
       Chef::Application.fatal! "Use git or package, not both" if r.git and r.package
       r.git.run_action :install if r.git
       r.package.run_action :install if r.package
+      # after code: other directories needs code already installed
+      create_directories
 
-      #r.db.run_action :create if r.db
+      r.db.run_action :create if r.db
       r.dependencies.run_action :install if r.dependencies
 
       save_settings
@@ -102,17 +105,8 @@ class Chef
     end
 
     def define_base_resources
-      site = r
       service r.service_name do
         supports restart: true, reload: false, status: true
-        action :nothing
-      end
-      noosfero_dependencies r.service_name do
-        site site
-        action :nothing
-      end
-      noosfero_upgrade r.service_name do
-        site site
         action :nothing
       end
     end
@@ -133,36 +127,36 @@ class Chef
 
     def create_directories
       # Directories
-      unless r.paths_in_code
-        Resource::NoosferoSite::Paths.each do |path|
-          directory r.send("#{path}_path") do
-            user r.user; group r.group
-          end
+      Resource::NoosferoSite::Paths.each do |path|
+        directory r.send("#{path}_path") do
+          user r.user; group r.group
         end
-        %w[ log run tmp ].each do |dir|
-          link "#{r.code_path}/#{dir}" do
-            to r.send("#{dir}_path")
-            not_if{ r.send("#{dir}_path").start_with? r.code_path }
-          end
-        end
-
-        # data paths
-        # recursive option is not used as it don't preserve user/group
-        %w[ index solr public public/articles public/image_uploads public/thumbnails ].each do |dir|
-          directory "#{r.data_path}/#{dir}" do
-            user r.user; group r.group
-          end
-        end
-        %w[ index solr public/articles public/image_uploads public/thumbnails ].each do |dir|
-          link "#{r.code_path}/#{dir}" do
-            to "#{r.data_path}/#{dir}"
-            not_if{ r.data_path.start_with? r.code_path }
-          end
-        end
-
-        # TODO: link configurations to /etc/noosfero
-
       end
+
+      # data paths
+      # recursive option is not used as it don't preserve user/group
+      %w[ index solr public public/articles public/image_uploads public/thumbnails ].each do |dir|
+        directory "#{r.data_path}/#{dir}" do
+          user r.user; group r.group
+        end
+      end
+
+      %w[ log run tmp ].each do |dir|
+        link "#{r.code_path}/#{dir}" do
+          to r.send("#{dir}_path")
+          not_if{ r.paths_in_code }
+        end
+      end
+
+      %w[ index solr public/articles public/image_uploads public/thumbnails ].each do |dir|
+        link "#{r.code_path}/#{dir}" do
+          to "#{r.data_path}/#{dir}"
+          not_if{ r.paths_in_code }
+        end
+      end
+
+      # TODO: link configurations to /etc/#{service_name}
+
     end
 
     def configure_service
@@ -172,10 +166,10 @@ class Chef
         mode "755"
         variables site: r
         action :create
-        notifies :restart, "service[#{r.service_name}]"
       end
       service r.service_name do
         action [:enable, :start]
+        subscribes :restart, "template[/etc/init.d/#{r.service_name}]"
       end
     end
 
@@ -184,7 +178,7 @@ class Chef
         variables site: r
         cookbook 'noosfero'
 
-        notifies :restart, "service[#{r.service_name}]"
+        notifies :restart, resources(service: r.service_name)
       end
     end
 

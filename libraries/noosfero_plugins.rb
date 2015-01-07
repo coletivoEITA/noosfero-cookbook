@@ -24,6 +24,9 @@ class Chef
   class Provider::NoosferoPlugins < NoosferoProvider
 
     action :enable do
+      # FIXME: r cannot be seen inside shell block
+      r = new_resource
+
       plugins = r.list
       if plugins == 'all'
         cmd = Mixlib::ShellOut.new "sh -c 'cd #{r.code_path}/plugins && echo */'"
@@ -33,17 +36,15 @@ class Chef
         plugins = plugins.sort
       end
 
-      # FIXME: why r is not visible? on r.service_name
-      r = new_resource
       shell "#{r.service_name}-enable-selected-plugins" do
         code <<-EOH
 script/noosfero-plugins disableall
 script/noosfero-plugins enable #{plugins.join ' '}
         EOH
 
-        notifies :restart, "service[#{r.service_name}]"
+        notifies :restart, resources(service: r.service_name)
         # install plugins' Gemfile
-        notifies :install, "noosfero_dependencies[#{r.service_name}]"
+        notifies :install, r.dependencies if r.dependencies
 
         only_if do
           cmd = Mixlib::ShellOut.new "sh -c 'cd #{r.code_path}/config/plugins && echo */'"

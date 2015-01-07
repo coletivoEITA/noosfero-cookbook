@@ -63,7 +63,7 @@ class Chef
           cookbook 'noosfero'
 
           action :create
-          notifies :restart, "service[#{r.service_name}]"
+          notifies :restart, resources(service: r.service_name)
         end
       end
       template "#{r.code_path}/config/thin.yml" do
@@ -71,7 +71,7 @@ class Chef
         cookbook 'noosfero'
 
         action :create
-        notifies :restart, "service[#{r.service_name}]"
+        notifies :restart, resources(service: r.service_name)
       end
 
       # Proxy

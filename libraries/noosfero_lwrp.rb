@@ -8,16 +8,14 @@ class NoosferoResource < Chef::Resource::LWRPBase
 
   # override on subclasses
   self.resource_name = nil
-  # defaults
   actions :nothing
-  default_action :nothing
 
   # top level reference for child resources
   attribute :site, kind_of: NoosferoResource
 
   # identifier for all childs
-  attribute :service_name, kind_of: String, default: (lazy do |r|
-    if r.site then r.site.service_name else 'noosfero' end
+  attribute :service_name, name_attribute: true, kind_of: String, default: (lazy do |r|
+    r.site.service_name if r.site
   end)
 
   def child_resource attr, &block
@@ -25,10 +23,10 @@ class NoosferoResource < Chef::Resource::LWRPBase
     unless res
       resource = "#{Cookbook}_#{attr}"
       klass = Chef::Resource::const_get camelize(resource).to_sym
-      res = klass.new self.service_name
+      res = klass.new self.service_name, self.run_context
     end
-    res.run_context = res.class.run_context = self.run_context
-    res.site self.site || self
+    res.class.run_context = self.run_context
+    res.site (if self.is_a?(Chef::Resource::NoosferoSite) then self else self.site end)
     # may be recursive
     res.instance_exec &block if block_given?
     res
@@ -110,9 +108,11 @@ class NoosferoProvider < Chef::Provider::LWRPBase
   alias_method :r, :new_resource
 
   def shell name=nil, &block
-    # FIXME: r cannot be seen
+    # FIXME: r cannot be seen inside shell block
     r = new_resource
+
     noosfero_shell name do
+      name name
       site r.site
       instance_exec &block
     end

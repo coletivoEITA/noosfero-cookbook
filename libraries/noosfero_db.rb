@@ -7,7 +7,7 @@ class Chef
     actions :create
     default_action :create
 
-    attribute :name, kind_of: String, default: lazy{ |r| r.service_name }
+    attribute :dbname, kind_of: String, default: lazy{ |r| r.service_name }
 
     attribute :hostname, kind_of: String, default: 'localhost'
     attribute :port, kind_of: String, default: lazy{ |r| node[:postgresql][:config][:port] }
@@ -30,7 +30,7 @@ class Chef
         #node.save
       end
 
-      run_context.include_recipe 'postgresql'
+      run_context.include_recipe 'postgresql::server'
       package 'libpq-dev'
       chef_gem 'pg'
       postgresql_connection = {
@@ -41,24 +41,30 @@ class Chef
       }
 
       postgresql_database_user r.username do
-        connection postgresql_connection
         password r.password
+
+        connection postgresql_connection
         action :create
       end
-      postgresql_database r.name do
-        connection postgresql_connection
-        action :create
-        if r.create_from_dump
-          notifies :load_dump, "noosfero_db[#{r.service_name}]"
+
+      postgresql_database r.dbname do
+        owner r.username
+        if r.create_from_dump.present?
+          notifies :load_dump, r, :immediately
         else
-          notifies :schema_load, "noosfero_db[#{r.service_name}]"
-          notifies :create, "noosfero_environment[#{r.service_name}]"
+          notifies :schema_load, r, :immediaetly
+          notifies :create, r.environment, :immediately if r.environment
         end
-      end
-      postgresql_database_user r.username do
+
         connection postgresql_connection
+        action :create
+      end
+
+      postgresql_database_user r.username do
         password r.password
-        database_name r.name
+        database_name r.dbname
+
+        connection postgresql_connection
         action :grant
       end
 
@@ -66,27 +72,35 @@ class Chef
         variables site: r.site
         cookbook 'noosfero'
 
-        notifies :restart, "service[#{r.service_name}]"
+        notifies :restart, resources(service: r.service_name)
       end
 
     end
 
     action :load_dump do
-      shell "#{r.service_name}-db-load-dump" do
+      # FIXME: r cannot be seen inside shell block
+      r = new_resource
+
+      shell "#{r.service_name} db load-dump" do
         code <<-EOH
-psql #{r.name} < #{r.create_from_dump}
+psql #{r.dbname} < #{r.create_from_dump}
         EOH
       end
     end
 
-
     action :schema_load do
-      shell "#{r.service_name}-db-schema-load" do
+      # FIXME: r cannot be seen inside shell block
+      r = new_resource
+
+      shell "#{r.service_name} db schema-load" do
         code <<-EOH
 export RAILS_ENV=#{r.rails.env}
 rake db:schema:load
         EOH
       end
+    end
+
+    action :nothing do
     end
 
   end

@@ -24,12 +24,12 @@ class Object
   def blank?
     self.nil?
   end
+  def present?
+    !self.blank?
+  end
 end
 class String
   def blank?
-    self.nil? or self.empty?
-  end
-  def present?
-    !self.blank?
+    self.nil? || self.empty?
   end
 end

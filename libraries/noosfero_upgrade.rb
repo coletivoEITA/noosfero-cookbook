@@ -11,6 +11,9 @@ class Chef
   class Provider::NoosferoUpgrade < NoosferoProvider
 
     action :run do
+      # FIXME: r cannot be seen inside shell block
+      r = new_resource
+
       shell "#{r.service_name}-upgrade" do
         code <<-EOH
 export RAILS_ENV=#{r.rails.env}
@@ -18,8 +21,8 @@ rake noosfero:translations:compile
 #{r.upgrade_script}
         EOH
         # a new dependency may appear on upgrade
-        notifies :install, "noosfero_dependencies[#{r.service_name}]"
-        notifies :restart, "service[#{r.service_name}]"
+        notifies :install, r.dependencies if r.dependencies
+        notifies :restart, resources(service: r.service_name)
       end
     end
   end

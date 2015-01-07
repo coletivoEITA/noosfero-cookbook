@@ -1,6 +1,6 @@
 #! /bin/sh
 ### BEGIN INIT INFO
-# Provides:          noosfero
+# Provides:          <%= @site.service_name %>
 # Required-Start:    $remote_fs
 # Required-Stop:     $remote_fs
 # Should-Start:      postgresql
@@ -12,11 +12,10 @@
 #                    placed in /etc/init.d.
 ### END INIT INFO
 
-# Sample init.d script for noosfero.
+# Sample init.d script for <%= @site.service_name %>
 #
 # This script was based on the skeleton init.d script present in a Debian
 # GNU/Linux system (sid), on Sat Feb 16 11:12:03 BRT 2008. It must be placed in
-# /etc/init.d/ (or whatever place your system uses for startup scripts), and you must create a file /etc/default/noosfero defining the variable
 #
 # Author: Antonio Terceiro <terceiro@colivre.coop.br>
 
@@ -41,12 +40,6 @@ PIDFILE="$NOOSFERO_DIR/tmp/pids/delayed_job.pid"
 . /lib/lsb/init-functions
 # Load the VERBOSE setting and other rcS variables
 . /lib/init/vars.sh
-
-if [ -z "$NOOSFERO_DIR" ] || [ -z "$NOOSFERO_USER" ]; then
-  echo "NOOSFERO_DIR or NOOSFERO_USER not defined, noosfero not being started."
-  echo "Both variables must be defined in /etc/default/noosfero"
-  exit 0
-fi
 
 if test -x /usr/sbin/noosfero-check-dbconfig ; then
   if ! noosfero-check-dbconfig; then
@@ -135,6 +128,7 @@ running(){
 case "$1" in
   start|stop|restart|status)
     do_$1
+    exit $?
     ;;
   force-reload)
     do_restart

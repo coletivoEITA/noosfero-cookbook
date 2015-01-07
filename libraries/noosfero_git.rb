@@ -9,6 +9,8 @@ class Chef
 
     attribute :repository, kind_of: String, default: "https://gitlab.com/noosfero/noosfero.git"
     attribute :revision, kind_of: String, default: 'master'
+
+    attribute :timeout, kind_of: Integer, default: 100_000_000
   end
 
   class Provider::NoosferoGit < NoosferoProvider
@@ -19,7 +21,8 @@ class Chef
         repository r.repository
         revision r.revision
         enable_submodules true
-        notifies :run, "noosfero_upgrade[#{r.service_name}]"
+        timeout r.timeout
+        notifies :run, r.upgrade if r.upgrade
         action :sync
       end
     end
