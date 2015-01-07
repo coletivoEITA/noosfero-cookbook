@@ -35,7 +35,7 @@ class Chef
     %w[ data config log run tmp ].each do |dir|
       attribute "#{dir}_path".to_sym, kind_of: String, default: (lazy do |r|
         if r.paths_in_code
-          "#{r.code_path}/#{dir}"
+          if dir == 'data' then r.code_path else "#{r.code_path}/#{dir}" end
         elsif r.user_install
           "/home/#{r.user}/#{dir}"
         else
@@ -141,7 +141,7 @@ class Chef
         end
       end
 
-      %w[ log run tmp ].each do |dir|
+      %w[ log run tmp tmp/pids ].each do |dir|
         link "#{r.code_path}/#{dir}" do
           to r.send("#{dir}_path")
           not_if{ r.paths_in_code }
