@@ -14,7 +14,7 @@ class Chef
       # FIXME: r cannot be seen inside shell block
       r = new_resource
 
-      shell "#{r.service_name}-upgrade" do
+      shell "#{r.service_name} upgrade" do
         code <<-EOH
 export RAILS_ENV=#{r.rails.env}
 rake noosfero:translations:compile

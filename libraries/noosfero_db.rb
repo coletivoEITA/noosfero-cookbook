@@ -81,7 +81,7 @@ class Chef
       # FIXME: r cannot be seen inside shell block
       r = new_resource
 
-      shell "#{r.service_name} db load-dump" do
+      shell "#{r.service_name} db load dump" do
         code <<-EOH
 psql #{r.dbname} < #{r.create_from_dump}
         EOH
@@ -92,7 +92,7 @@ psql #{r.dbname} < #{r.create_from_dump}
       # FIXME: r cannot be seen inside shell block
       r = new_resource
 
-      shell "#{r.service_name} db schema-load" do
+      shell "#{r.service_name} db schema load" do
         code <<-EOH
 export RAILS_ENV=#{r.rails.env}
 rake db:schema:load

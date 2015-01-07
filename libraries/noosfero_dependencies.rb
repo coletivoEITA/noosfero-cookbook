@@ -42,13 +42,13 @@ class Chef
 
       case r.method
       when 'bundler'
-        shell "#{r.service_name}-bundle-install" do
+        shell "#{r.service_name} bundle install" do
           code <<-EOH
 bundle check || bundle install
           EOH
         end
       when 'quick_start'
-        shell "#{r.service_name}-quick-start" do
+        shell "#{r.service_name} script/quick-start" do
           code <<-EOH
 script/quick-start
           EOH

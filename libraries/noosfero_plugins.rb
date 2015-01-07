@@ -41,7 +41,7 @@ class Chef
         plugins = plugins.sort
       end
 
-      shell "#{r.service_name}-enable-selected-plugins" do
+      shell "#{r.service_name} enable selected plugins" do
         code <<-EOH
 script/noosfero-plugins disableall
 script/noosfero-plugins enable #{plugins.join ' '}
