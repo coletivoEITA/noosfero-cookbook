@@ -44,8 +44,9 @@ class Chef
       backend == 'thin'
     end
 
-    attribute :cache, kind_of: NoosferoResource, default: lazy{ |r| r.child_resource :cache }
-    attribute :proxy, kind_of: NoosferoResource, default: lazy{ |r| r.child_resource :proxy }
+    # disabled by default
+    attribute :proxy, kind_of: NoosferoResource, default: nil
+    attribute :cache, kind_of: NoosferoResource, default: nil
     attribute :ssl, kind_of: NoosferoResource, default: nil
 
   end
