@@ -7,13 +7,13 @@ class Chef
     actions :configure
     default_action :configure
 
-    attribute :domain, kind_of: String, default: lazy{ |r| r.server_name }
+    attribute :domain, kind_of: String, default: lazy{ |r| "stats.#{r.server_name}" }
 
     attribute :cron_minute, kind_of: String, default: '*/15'
 
     attribute :htpasswd_enabled, kind_of: Boolean, default: true
     attribute :htpasswd_user, kind_of: String, default: lazy{ |r| r.service_name }
-    attribute :htpasswd_passwork, kind_of: String, default: lazy{ |r| r.user.reverse }
+    attribute :htpasswd_password, kind_of: String, default: lazy{ |r| r.service_name.reverse }
 
   end
 
@@ -29,12 +29,6 @@ class Chef
         log_location r.access_log_path
         log_type 'web'
         log_format 'combined'
-
-        overides = JSON.parse r.awstats.to_json
-        overides.reject!{ |k,v| %w[domain enable htpasswd].include? k.to_s }
-        overides.each do |key, value|
-          send key, value
-        end
       end
 
       if r.htpasswd_enabled
@@ -51,7 +45,7 @@ class Chef
           cookbook 'noosfero'
           owner node[:apache][:user]
           group node[:apache][:group]
-          variables r.awstats
+          variables site: r.site
         end
         apache_site site do
           enable true

@@ -1,5 +1,5 @@
 <VirtualHost *:<%= node[:apache][:listen_ports].first %>>
-  ServerName <%= @domain %>
+  ServerName <%= @site.awstats.domain %>
 
   Include <%= node[:awstats][:apache_conf_filename] %>
   RedirectMatch ^/$ /awstats/awstats.pl?config=<%= @site.server_name %>
