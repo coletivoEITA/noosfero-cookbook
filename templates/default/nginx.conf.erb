@@ -82,8 +82,8 @@ server {
   if (-f $document_root/maintenance.html) {
     return 503;
   }
-  error_page 503 @site.maintenance;
-  location @site.maintenance {
+  error_page 503 @maintenance;
+  location @maintenance {
     rewrite ^(.*)$ /maintenance.html break;
   }
 
@@ -115,10 +115,10 @@ server {
     access_log <%= @site.access_log_path %> combined;
     error_log <%= @site.error_log_path %>;
 
-    try_files index.html $uri @site.proxy;
+    try_files index.html $uri @proxy;
   }
 
-  location @site.proxy {
+  location @proxy {
   <% if @site.server.unicorn? %>
     proxy_buffers               4 256k;
     proxy_buffer_size           256k;

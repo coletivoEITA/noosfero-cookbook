@@ -74,37 +74,6 @@ class Chef
         notifies :restart, resources(service: r.service_name)
       end
 
-      # Proxy
-      case r.proxy
-      when 'nginx'
-        run_context.include_recipe 'nginx'
-
-        template "#{node[:nginx][:dir]}/sites-available/#{r.service_name}" do
-          source "nginx.conf.erb"
-          cookbook 'noosfero'
-          owner node[:nginx][:user]
-          group node[:nginx][:group]
-          variables site: r.site
-          notifies :reload, "service[nginx]"
-        end
-        nginx_site r.service_name do
-          enable true
-        end
-      when 'apache'
-        run_context.include_recipe 'apache2'
-
-        template "#{node[:apache][:dir]}/sites-available/#{r.service_name}.conf" do
-          source "apache2.conf.erb"
-          cookbook 'noosfero'
-          owner node[:apache][:user]
-          group node[:apache][:group]
-          variables site: r.site
-          notifies :reload, "service[apache]"
-        end
-        apache_site r.service_name do
-          enable true
-        end
-      end
     end
 
   end
