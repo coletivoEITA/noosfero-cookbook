@@ -7,7 +7,10 @@ class Chef
     actions :install
     default_action :install
 
-    attribute :block_bots, kind_of: Array, default: ['msnbot', 'Purebot', 'Baiduspider', 'Lipperhey', 'Mail.Ru', 'scrapbot']
+    attribute :block_bots, kind_of: Array, default: %w[
+      msnbot Purebot Baiduspider Lipperhey Mail.Ru scrapbot
+      MJ12bot AhrefsBot YandexBot BDCbot
+    ]
 
     attribute :feed_updater_enabled, kind_of: Boolean, default: true
 
