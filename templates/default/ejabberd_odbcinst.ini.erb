@@ -1,0 +1,8 @@
+[<%= @site.chat.odbc_driver %>]
+Description   = PostgreSQL ODBC driver (Unicode version)
+Driver  = <%= `dpkg -L odbc-postgresql | grep psqlodbcw.so`.strip %>
+Setup   = <%= `dpkg -L odbcinst1debian2 | grep libodbcpsqlS.so`.strip %>
+Debug   = 0
+CommLog   = 1
+UsageCount    = 2
+

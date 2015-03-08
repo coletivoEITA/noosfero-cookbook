@@ -68,6 +68,8 @@ class Chef
     attribute :plugins, kind_of: NoosferoResource, default: nil
     attribute :server, kind_of: NoosferoResource, default: lazy{ |r| r.child_resource :server }
 
+    attribute :chat, kind_of: NoosferoResource, default: nil
+
     attribute :logrotate, kind_of: NoosferoResource, default: nil
     attribute :awstats, kind_of: NoosferoResource, default: nil
     attribute :backup, kind_of: NoosferoResource, default: nil
@@ -96,6 +98,8 @@ class Chef
       r.plugins.run_action :enable if r.plugins
       r.plugins.run_action :config if r.plugins
       r.server.run_action :install if r.server
+
+      r.chat.run_action :configure if r.chat
 
       r.logrotate.run_action :configure if r.logrotate
       r.backup.run_action :configure if r.backup

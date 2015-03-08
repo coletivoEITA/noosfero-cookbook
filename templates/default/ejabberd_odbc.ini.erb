@@ -1,0 +1,17 @@
+[<%= @site.chat.odbc_dsn %>]
+Description      = PostgreSQL Noosfero ejabberd database
+Driver           = <%= @site.chat.odbc_driver %>
+Trace            = No
+TraceFile        = /tmp/psqlodbc.log
+Database         = <%= @site.db.dbname %>
+Servername       = <%= @site.db.hostname %>
+UserName         = <%= @site.db.username %>
+Password         = <%= @site.db.password %>
+Port             = <%= @site.db.port %>
+ReadOnly         = No
+RowVersioning    = No
+ShowSystemTables = No
+ShowOidColumn    = No
+FakeOidIndex     = No
+ConnSettings     = SET search_path TO ejabberd
+

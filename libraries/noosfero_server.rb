@@ -9,7 +9,7 @@ class Chef
 
     attribute :block_bots, kind_of: Array, default: %w[
       msnbot Purebot Baiduspider Lipperhey Mail.Ru scrapbot
-      MJ12bot AhrefsBot YandexBot BDCbot
+      MJ12bot AhrefsBot YandexBot BDCbot MegaIndex
     ]
 
     attribute :feed_updater_enabled, kind_of: Boolean, default: true

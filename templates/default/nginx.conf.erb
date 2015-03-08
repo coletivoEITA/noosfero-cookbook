@@ -57,6 +57,12 @@ upstream <%= @site.service_name %>_cache {
   keepalive 64;
 }
 
+<% if @site.chat %>
+upstream <%= @site.service_name %>_ejabberd {
+  server 127.0.0.1:<%= @site.chat.port %>;
+}
+<% end %>
+
 server {
   listen <%= @site.server.proxy.port %>;
   <% if @site.server.proxy.to_cache %>
@@ -86,6 +92,21 @@ server {
   location @maintenance {
     rewrite ^(.*)$ /maintenance.html break;
   }
+
+<% if @site.chat %>
+  location /http-bind {
+    proxy_buffers               4 256k;
+    proxy_buffer_size           256k;
+    proxy_busy_buffers_size     256k;
+    proxy_temp_file_write_size  256k;
+
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Host $host;
+    proxy_pass http://<%= @site.service_name %>_ejabberd;
+  }
+<% end %>
 
   location / {
   <% if not @site.server.block_bots.empty? %>

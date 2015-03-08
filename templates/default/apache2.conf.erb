@@ -38,6 +38,10 @@
   RewriteRule ^.*$ - [F]
   <% end %>
 
+  <% if @site.chat %>
+    Include <%= @site.code_path %>/util/chat/apache/xmpp.conf
+  <% end %>
+
   # Rewrite index to check for static index.html
   RewriteRule ^/$ /index.html [QSA]
 
