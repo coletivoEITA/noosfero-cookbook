@@ -9,7 +9,7 @@ class Chef
 
     attribute :block_bots, kind_of: Array, default: %w[
       msnbot Purebot Baiduspider Lipperhey Mail.Ru scrapbot
-      MJ12bot AhrefsBot YandexBot BDCbot MegaIndex
+      MJ12bot AhrefsBot YandexBot BDCbot MegaIndex UniLeipzigASV
     ]
 
     attribute :feed_updater_enabled, kind_of: Boolean, default: true
@@ -30,7 +30,7 @@ class Chef
 
     attribute :backlog, kind_of: Integer, default: 2048
     attribute :restart_on_requests, kind_of: Array, default: [200,300]
-    attribute :restart_on_memory, kind_of: Array, default: [208,256]
+    attribute :restart_on_memory, kind_of: Array, default: [172,208]
     attribute :warmup_time, kind_of: Integer, default: 1
     attribute :warmup_urls, kind_of: Array, default: (lazy do |r|
       ['/admin/plugins', '/', '/profile/content'].map{ |path| "http://#{r.server_name}#{path}" }

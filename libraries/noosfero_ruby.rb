@@ -19,7 +19,7 @@ class Chef
       #RUBY_FREE_MIN: 600000,
     }
 
-    attribute :allocator, kind_of: String, default: 'jemalloc'
+    attribute :allocator, kind_of: String, default: nil
 
     def rvm?
       self.from == 'rvm'
