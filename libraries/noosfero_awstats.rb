@@ -22,8 +22,6 @@ class Chef
     action :configure do
       run_context.include_recipe 'awstats'
 
-      skip_urls = Dir.chdir("#{r.code_path}/public"){ Dir.glob('*/').map{ |d| "^/#{d[0..-2]}" } }
-
       awstats_domain_statistics r.server_name do
         domain_name r.server_name
         host_aliases r.custom_domains.join(' ')
@@ -31,7 +29,6 @@ class Chef
         log_location r.access_log_path
         log_type 'web'
         log_format 'combined'
-        skipped_files skip_urls.map{ |u| "REGEX[#{u}]" }.join(' ')
       end
 
       if r.htpasswd_enabled
