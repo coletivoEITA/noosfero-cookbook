@@ -54,10 +54,11 @@ fi
 
 noosfero_run() {
   if [ "$NOOSFERO_USER" != "$USER" ]; then
-    su $NOOSFERO_USER -l -c "cd $NOOSFERO_DIR &&
+    # su -l is buggy to load rc and profile
+    su $NOOSFERO_USER -l -c "bash -l -c \"cd $NOOSFERO_DIR &&
       <%= @site.ruby.switch %> &&
       <%= exports.join "\n" %>
-      $*"
+      $*\""
   else
     cd $NOOSFERO_DIR && \
       <%= @site.ruby.switch %> &&
