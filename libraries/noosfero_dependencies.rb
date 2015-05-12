@@ -24,6 +24,8 @@ class Chef
       end
     end)
 
+    attribute :nodejs_from, kind_of: Array, default: 'package', equal_to: %w[ package binary source ]
+
   end
 
   class Provider::NoosferoDependencies < NoosferoProvider
@@ -31,6 +33,9 @@ class Chef
     action :install do
       # FIXME: r cannot be seen inside shell block
       r = new_resource
+
+      # for asset pipeline
+      run_context.include_recipe "nodejs::nodejs_from_#{r.nodejs_from}"
 
       packages = r.send "packages_for_#{r.method}"
       packages.each do |p|
