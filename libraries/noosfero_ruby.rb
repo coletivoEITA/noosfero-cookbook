@@ -7,7 +7,7 @@ class Chef
     actions :configure
     default_action :configure
 
-    attribute :from, kind_of: String, default: 'system', equal_to: ['rvm', 'system']
+    attribute :from, kind_of: String, default: 'system', equal_to: ['system', 'rbenv', 'rvm']
 
     attribute :version, kind_of: String, default: 'system'
 
@@ -21,8 +21,22 @@ class Chef
 
     attribute :allocator, kind_of: String, default: nil
 
+    def rbenv?
+      self.from == 'rbenv'
+    end
     def rvm?
       self.from == 'rvm'
+    end
+
+    def switch
+      case self.from
+      when 'rvm'
+        "rvm use #{self.version}"
+      when 'rbenv'
+        "rbenv shell #{self.version}"
+      else
+        "true"
+      end
     end
 
   end
@@ -30,6 +44,20 @@ class Chef
   class Provider::NoosferoRuby < NoosferoProvider
 
     action :configure do
+      case r.from
+      when 'rbenv'
+        run_context.include_recipe 'ruby_build'
+        run_context.include_recipe 'rbenv'
+        rbenv_ruby r.version do
+          user r.user
+        end
+      when 'rvm'
+        run_context.include_recipe 'rvm'
+        rvm_ruby r.version
+      else
+        # packages are installed by noosfero_dependencies
+      end
+
       case r.allocator
       when 'jemalloc'
         package 'libjemalloc1'

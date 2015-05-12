@@ -8,6 +8,6 @@
 
 <%= @site.rails.env %>:
   url: http://<%= @site.plugins.settings[:solr][:address] %>:<%= @site.plugins.settings[:solr][:port] %>/solr
-  jvm_options: -server -Xmx<%= @site.plugins.settings[:solr][:memory] %>M -Xms64M
+  options: -m <%= @site.plugins.settings[:solr][:memory] %>m
   timeout: <%= @site.plugins.settings[:solr][:timeout] %>
 

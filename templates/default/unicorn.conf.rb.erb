@@ -39,6 +39,8 @@ WorkerDaemons = {
   0 => {
     :name => 'delayed_job',
     :run => proc{
+      Thread.new{ sleep 30.minutes; Process.kill :SIGTERM, Process.pid }
+
     <% if @site.version >= '1.0' %>
       Delayed::Worker.before_fork
     <% end %>
@@ -49,6 +51,8 @@ WorkerDaemons = {
   1 => {
     :name => 'feed-updater',
     :run => proc{
+      Thread.new{ sleep 2.hours; Process.kill :SIGTERM, Process.pid }
+
       FeedUpdater.new.start
     },
   },

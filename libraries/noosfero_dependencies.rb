@@ -32,8 +32,6 @@ class Chef
       # FIXME: r cannot be seen inside shell block
       r = new_resource
 
-      run_context.include_recipe 'rvm'
-
       packages = r.send "packages_for_#{r.method}"
       packages.each do |p|
         package p do

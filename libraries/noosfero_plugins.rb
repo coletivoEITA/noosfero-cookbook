@@ -14,7 +14,7 @@ class Chef
       solr: {
         address: '127.0.0.1',
         port: 8983,
-        memory: 128,
+        memory: 192,
         timeout: 600,
       },
     }
@@ -65,7 +65,7 @@ script/noosfero-plugins enable #{plugins.join ' '}
       if r.list.include? 'solr'
         run_context.include_recipe 'java'
 
-        template "#{r.code_path}/plugins/solr/config/solr.yml" do
+        template "#{r.code_path}/config/solr.yml" do
           variables site: r.site
           cookbook 'noosfero'
 

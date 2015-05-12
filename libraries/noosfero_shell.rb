@@ -16,18 +16,26 @@ class Chef
 
     action :run do
       case r.ruby.from
+      when 'system'
+        bash r.name do
+          user r.user; group r.group
+          cwd r.code_path
+          code r.code
+          action :run
+        end
+      when 'rbenv'
+        rbenv_script r.name do
+          user r.user; group r.group
+          cwd r.code_path
+          rbenv_version r.ruby.version
+          code r.code
+          action :run
+        end
       when 'rvm'
         rvm_shell r.name do
           user r.user; group r.group
           cwd r.code_path
           ruby_string r.ruby.version
-          code r.code
-          action :run
-        end
-      when 'system'
-        bash r.name do
-          user r.user; group r.group
-          cwd r.code_path
           code r.code
           action :run
         end
