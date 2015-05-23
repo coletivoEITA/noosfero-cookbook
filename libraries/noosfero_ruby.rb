@@ -53,7 +53,8 @@ class Chef
         end
       when 'rvm'
         run_context.include_recipe 'rvm'
-        rvm_ruby r.version
+        # FIXME: crash, see: https://github.com/martinisoft/chef-rvm/issues/322
+        #rvm_ruby r.version
       else
         # packages are installed by noosfero_dependencies
       end
