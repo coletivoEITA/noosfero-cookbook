@@ -7,6 +7,7 @@ class Chef
     actions :configure
     default_action :configure
 
+    # TODO: manage system-wide install for rbenv and rvm
     attribute :from, kind_of: String, default: 'system', equal_to: ['system', 'rbenv', 'rvm']
 
     attribute :version, kind_of: String, default: 'system'
@@ -51,10 +52,20 @@ class Chef
         rbenv_ruby r.version do
           user r.user
         end
+        rbenv_gem 'bundler' do
+          rbenv_version r.version
+          user r.user
+          action :install
+        end
       when 'rvm'
         run_context.include_recipe 'rvm'
         # FIXME: crash, see: https://github.com/martinisoft/chef-rvm/issues/322
         #rvm_ruby r.version
+        rvm_gem 'bundler' do
+          ruby_string r.version
+          user r.user
+          action :install
+        end
       else
         # packages are installed by noosfero_dependencies
       end
