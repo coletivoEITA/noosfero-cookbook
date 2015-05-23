@@ -7,7 +7,7 @@ class Chef
     actions :configure
     default_action :configure
 
-    attribute :packages, kind_of: Array, default: %w[ejabberd odbc-postgresql pidgin-data]
+    attribute :packages, kind_of: Array, default: %w[ejabberd odbc-postgresql unixodbc pidgin-data]
 
     attribute :port, kind_of: Fixnum, default: 5280
 
