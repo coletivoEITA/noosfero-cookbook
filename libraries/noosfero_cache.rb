@@ -22,7 +22,6 @@ class Chef
       end
     end)
 
-    # for varnish
     attribute :backend_port, kind_of: Integer, default: (lazy do |r|
       if r.server.proxy
         if r.server.proxy.to_cache
