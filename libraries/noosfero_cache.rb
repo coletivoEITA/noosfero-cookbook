@@ -22,7 +22,6 @@ class Chef
       end
     end)
 
-    # for varnish
     attribute :backend_port, kind_of: Integer, default: (lazy do |r|
       if r.server.proxy
         if r.server.proxy.to_cache
@@ -42,7 +41,8 @@ class Chef
   class Provider::NoosferoCache < NoosferoProvider
 
     action :install do
-      if r.server == 'varnish'
+      case r.with
+      when 'varnish'
         raise "node[:varnish][:vcl_cookbook] not using noosfero!" if node[:varnish][:vcl_cookbook] != 'noosfero'
 
         run_context.include_recipe 'varnish'
