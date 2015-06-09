@@ -41,7 +41,7 @@ class Chef
   class Provider::NoosferoCache < NoosferoProvider
 
     action :install do
-      if r.server == 'varnish'
+      case r.with == 'varnish'
         raise "node[:varnish][:vcl_cookbook] not using noosfero!" if node[:varnish][:vcl_cookbook] != 'noosfero'
 
         run_context.include_recipe 'varnish'
