@@ -34,7 +34,7 @@ class Chef
     attribute :restart_on_memory, kind_of: Array, default: [172,208]
     attribute :warmup_time, kind_of: Integer, default: 1
     attribute :warmup_urls, kind_of: Array, default: (lazy do |r|
-      ['/admin/plugins', '/', '/profile/content'].map{ |path| "http://#{r.server_name}#{path}" }
+      ['/'].map{ |path| "http://#{r.server_name}#{path}" }
     end)
 
     attribute :unicorn_bin, kind_of: String, default: (lazy do |r|
