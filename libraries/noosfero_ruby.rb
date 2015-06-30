@@ -20,7 +20,7 @@ class Chef
       #RUBY_FREE_MIN: 600000,
     }
 
-    attribute :allocator, kind_of: String, default: nil
+    attribute :allocator, kind_of: String, default: 'jemalloc'
 
     def rbenv?
       self.from == 'rbenv'
