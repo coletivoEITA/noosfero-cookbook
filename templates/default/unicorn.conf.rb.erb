@@ -39,6 +39,7 @@ WorkerDaemons = {
   0 => {
     :name => 'delayed_job',
     :run => proc{
+      require 'delayed/command'
       Thread.new{ sleep 30.minutes; Process.kill :SIGTERM, Process.pid }
 
     <% if @site.version >= '1.0' %>
