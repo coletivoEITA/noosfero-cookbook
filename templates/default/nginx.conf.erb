@@ -93,6 +93,9 @@ server {
     rewrite ^(.*)$ /maintenance.html break;
   }
 
+  access_log <%= @site.access_log_path %> combined;
+  error_log <%= @site.error_log_path %>;
+
 <% if @site.chat %>
   location /http-bind {
     proxy_buffers               4 256k;
@@ -132,9 +135,6 @@ server {
       proxy_pass http://<%= @site.service_name %>_cache;
     }
   <% end %>
-
-    access_log <%= @site.access_log_path %> combined;
-    error_log <%= @site.error_log_path %>;
 
     try_files index.html $uri @proxy;
   }
