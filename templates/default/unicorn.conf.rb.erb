@@ -121,9 +121,9 @@ end
 after_fork do |server, worker|
   daemon = WorkerDaemons[worker.nr]
 
+  MessageBus.after_fork if defined? MessageBus
   # Start up the database connection again in the worker
   ActiveRecord::Base.establish_connection if defined? ActiveRecord::Base
-
   # reset memcache connection (if using memcache-client)
   Rails.cache.instance_variable_get(:@data).reset if Rails.cache.class.to_s == 'ActiveSupport::Cache::MemCacheStore'
 
