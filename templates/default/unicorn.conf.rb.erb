@@ -20,14 +20,16 @@ CurrentPrio = Process.getpriority Process::PRIO_PROCESS, 0
 WarmUpRenice = `bash -c 'ulimit -e'`.to_i-20 >= CurrentPrio rescue false
 WarmUpRenicePrio = 19
 
-begin
-  require 'unicorn/worker_killer'
-  WorkerKiller = true
-rescue LoadError
-  WorkerKiller = nil
+WorkerKiller = <%= @site.server.worker_killer %>
+if WorkerKiller
+  begin
+    require 'unicorn/worker_killer'
+    WorkerKillByRequests = <%= @site.server.restart_on_requests.first %>..<%= @site.server.restart_on_requests.last %>
+    WorkerKillByMemory = <%= @site.server.restart_on_memory.first %>..<%= @site.server.restart_on_memory.last %>
+  rescue LoadError
+    WorkerKiller = false
+  end
 end
-WorkerKillByRequests = <%= @site.server.restart_on_requests.first %>..<%= @site.server.restart_on_requests.last %>
-WorkerKillByMemory = <%= @site.server.restart_on_memory.first %>..<%= @site.server.restart_on_memory.last %>
 
 # FIXME: this makes the worker too big and activate Unicorn::WorkerKiller::Oom
 WorkerOutOfBandGcFrequency = nil

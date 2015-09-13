@@ -29,7 +29,9 @@ class Chef
       end
     end)
 
+    # unicorn conf
     attribute :backlog, kind_of: Integer, default: 2048
+    attribute :worker_killer, kind_of: Boolean, default: false
     attribute :restart_on_requests, kind_of: Array, default: [200,300]
     attribute :restart_on_memory, kind_of: Array, default: [172,208]
     attribute :warmup_time, kind_of: Integer, default: 1
