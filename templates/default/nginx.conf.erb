@@ -51,11 +51,13 @@ upstream <%= @site.service_name %> {
   keepalive 64;
 }
 
+<% if @site.server.cache %>
 upstream <%= @site.service_name %>_cache {
   server <%= @site.server.cache.address %>:<%= @site.server.cache.port %>;
 
   keepalive 64;
 }
+<% end %>
 
 <% if @site.chat %>
 upstream <%= @site.service_name %>_ejabberd {
@@ -153,7 +155,7 @@ server {
     proxy_set_header Host $host;
     proxy_pass http://<%= @site.service_name %>;
 
-  <% if @site.server.cache.with == 'proxy' %>
+  <% if @site.server.cache and @site.server.cache.with == 'proxy' %>
     proxy_cache <%= @site.server.cache.key_zone %>;
     proxy_cache_valid 200 <%= @site.server.cache.expires %>;
   <% end %>
