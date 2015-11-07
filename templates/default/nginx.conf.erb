@@ -113,6 +113,12 @@ server {
   }
 <% end %>
 
+  location ~ '/assets/.+-[^\.]{64}\..+$' {
+    add_header Cache-Control public;
+    expires 1y;
+    try_files $uri @proxy;
+  }
+
   location / {
   <% if not @site.server.block_bots.empty? %>
     if ($http_user_agent = "") {
