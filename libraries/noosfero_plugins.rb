@@ -44,7 +44,7 @@ class Chef
       shell "#{r.service_name} enable selected plugins" do
         code <<-EOH
 script/noosfero-plugins disableall
-script/noosfero-plugins enable #{plugins.join ' '}
+script/noosfero-plugins install #{plugins.join ' '}
         EOH
 
         notifies :restart, resources(service: r.service_name)
