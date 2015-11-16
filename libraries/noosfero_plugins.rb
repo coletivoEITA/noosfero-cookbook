@@ -41,10 +41,12 @@ class Chef
         plugins = plugins.sort
       end
 
+      install_command = if r.version >= '1.3' then 'install' else 'enable' end
+
       shell "#{r.service_name} enable selected plugins" do
         code <<-EOH
 script/noosfero-plugins disableall
-script/noosfero-plugins install #{plugins.join ' '}
+script/noosfero-plugins #{install_command} #{plugins.join ' '}
         EOH
 
         notifies :restart, resources(service: r.service_name)
