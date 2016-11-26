@@ -13,30 +13,34 @@ class Chef
   end
 
   class Provider::NoosferoShell < NoosferoProvider
+    provides :noosfero_shell
 
     action :run do
+      # FIXME: r cannot be seen inside shell block
+      r = new_resource
+
       case r.ruby.from
       when 'system'
         bash r.name do
-          user r.user; group r.group
-          cwd r.code_path
+          user r.site.user; group r.site.group
+          cwd  r.code_path
           code r.code
           action :run
         end
       when 'rbenv'
         rbenv_script r.name do
-          user r.user; group r.group
-          cwd r.code_path
-          rbenv_version r.ruby.version
+          user r.site.user; group r.site.group
+          cwd  r.code_path
           code r.code
+          rbenv_version r.ruby.version
           action :run
         end
       when 'rvm'
         rvm_shell r.name do
-          user r.user; group r.group
-          cwd r.code_path
-          ruby_string r.ruby.version
+          user r.site.user; group r.site.group
+          cwd  r.code_path
           code r.code
+          ruby_string r.ruby.version
           action :run
         end
       end

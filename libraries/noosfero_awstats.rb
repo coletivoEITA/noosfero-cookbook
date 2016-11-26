@@ -18,6 +18,7 @@ class Chef
   end
 
   class Provider::NoosferoAwstats < NoosferoProvider
+    provides :noosfero_awstats
 
     action :configure do
       run_context.include_recipe 'awstats'

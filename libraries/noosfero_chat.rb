@@ -23,6 +23,7 @@ class Chef
   end
 
   class Provider::NoosferoChat < NoosferoProvider
+    provides :noosfero_chat
 
     action :configure do
       # FIXME

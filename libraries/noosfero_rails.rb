@@ -16,6 +16,7 @@ class Chef
   end
 
   class Provider::NoosferoRails < NoosferoProvider
+    provides :noosfero_rails
 
     action :configure do
       case r.cache_store

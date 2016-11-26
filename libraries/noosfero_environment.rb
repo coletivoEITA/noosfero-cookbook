@@ -13,6 +13,7 @@ class Chef
   end
 
   class Provider::NoosferoEnvironment < NoosferoProvider
+    provides :noosfero_environment
 
     action :create do
       # FIXME: r cannot be seen inside shell block

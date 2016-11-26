@@ -16,6 +16,7 @@ class Chef
   end
 
   class Provider::NoosferoBackup < NoosferoProvider
+    provides :noosfero_backup
 
     action :configure do
       run_context.include_recipe 'backup'

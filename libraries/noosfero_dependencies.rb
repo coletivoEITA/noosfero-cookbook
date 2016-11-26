@@ -29,11 +29,9 @@ class Chef
   end
 
   class Provider::NoosferoDependencies < NoosferoProvider
+    provides :noosfero_dependencies
 
     action :install do
-      # FIXME: r cannot be seen inside shell block
-      r = new_resource
-
       # for asset pipeline
       run_context.include_recipe "nodejs::nodejs_from_#{r.nodejs_from}"
 

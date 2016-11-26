@@ -7,7 +7,7 @@ class Chef
     actions :configure
     default_action :configure
 
-    attribute :user, kind_of: String, default: lazy{ |r| r.service_name }
+    attribute :user,  kind_of: String, default: lazy{ |r| r.service_name }
     attribute :group, kind_of: String, default: lazy{ |r| r.service_name }
 
     attribute :version, kind_of: String, default: '1.0.0'
@@ -77,6 +77,7 @@ class Chef
   end
 
   class Provider::NoosferoSite < NoosferoProvider
+    provides :noosfero_site
 
     action :configure do
       create_user if r.user_install
@@ -92,7 +93,7 @@ class Chef
       create_directories
 
       r.db.run_action :create if r.db
-      r.dependencies.run_action :install if r.dependencies
+      #r.dependencies.run_action :install if r.dependencies
 
       save_settings
       r.plugins.run_action :enable if r.plugins

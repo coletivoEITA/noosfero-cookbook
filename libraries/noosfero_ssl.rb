@@ -8,7 +8,7 @@ class Chef
     default_action :install
 
     attribute :default, kind_of: Boolean, default: true
-    attribute :spdy, kind_of: Boolean, default: true
+    attribute :spdy, kind_of: Boolean, default: false
     attribute :redirect_http, kind_of: Boolean, default: true
 
     # default to only safe protocols
@@ -20,6 +20,7 @@ class Chef
   end
 
   class Provider::NoosferoSsl < NoosferoProvider
+    provides :noosfero_ssl
 
     action :install do
     end

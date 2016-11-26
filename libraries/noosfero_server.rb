@@ -58,6 +58,7 @@ class Chef
   end
 
   class Provider::NoosferoServer < NoosferoProvider
+    provides :noosfero_server
 
     action :install do
       r.cache.run_action :install if r.cache

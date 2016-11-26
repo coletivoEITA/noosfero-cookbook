@@ -20,6 +20,7 @@ class Chef
   end
 
   class Provider::NoosferoDb < NoosferoProvider
+    provides :noosfero_db
 
     action :create do
       if Chef::Config[:solo] and r.password.nil?

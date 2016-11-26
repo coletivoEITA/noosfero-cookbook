@@ -39,6 +39,7 @@ class Chef
   end
 
   class Provider::NoosferoCache < NoosferoProvider
+    provides :noosfero_cache
 
     action :install do
       case r.with

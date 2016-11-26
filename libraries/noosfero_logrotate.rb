@@ -13,6 +13,7 @@ class Chef
   end
 
   class Provider::NoosferoLogrotate < NoosferoProvider
+    provides :noosfero_logrotate
 
     action :configure do
       # FIXME: r cannot be seen inside blocks

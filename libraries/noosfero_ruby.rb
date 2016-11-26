@@ -43,6 +43,7 @@ class Chef
   end
 
   class Provider::NoosferoRuby < NoosferoProvider
+    provides :noosfero_ruby
 
     action :configure do
       case r.from

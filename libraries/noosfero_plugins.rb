@@ -22,6 +22,7 @@ class Chef
   end
 
   class Provider::NoosferoPlugins < NoosferoProvider
+    provides :noosfero_plugins
 
     # FIXME: whyrun not supported if code is not yet fetched
     def whyrun_supported?

@@ -10,6 +10,7 @@ class Chef
   end
 
   class Provider::NoosferoPackage < NoosferoProvider
+    provides :noosfero_package
 
     action :create do
       r = new_resource

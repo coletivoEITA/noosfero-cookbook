@@ -1,7 +1,4 @@
 
-default[:nginx][:default][:modules] = ["http_spdy_module"]
-default[:nginx][:source][:modules] = ["nginx::http_spdy_module"]
-
 default[:backup][:version_from_git?] = true
 default[:backup][:git_repo] = 'https://github.com/coletivoEITA/backup.git'
 

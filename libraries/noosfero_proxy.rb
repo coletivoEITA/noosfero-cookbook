@@ -28,6 +28,7 @@ class Chef
   end
 
   class Provider::NoosferoProxy < NoosferoProvider
+    provides :noosfero_proxy
 
     action :install do
       case r.with

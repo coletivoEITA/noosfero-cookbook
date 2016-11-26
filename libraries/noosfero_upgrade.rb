@@ -9,6 +9,7 @@ class Chef
   end
 
   class Provider::NoosferoUpgrade < NoosferoProvider
+    provides :noosfero_upgrade
 
     action :run do
       # FIXME: r cannot be seen inside shell block

@@ -20,15 +20,20 @@ class NoosferoResource < Chef::Resource::LWRPBase
 
   def child_resource attr, &block
     res = instance_variable_get "@#{attr}"
+
     unless res
       resource = "#{Cookbook}_#{attr}"
-      klass = Chef::Resource::const_get camelize(resource).to_sym
-      res = klass.new self.service_name, self.run_context
+      klass    = Chef::Resource::const_get camelize(resource).to_sym
+      res      = klass.new self.service_name, self.run_context
     end
     res.class.run_context = self.run_context
-    res.site (if self.is_a?(Chef::Resource::NoosferoSite) then self else self.site end)
+
+    site = if self.is_a? Chef::Resource::NoosferoSite then self else @site end
+    res.instance_variable_set :@site, site
+
     # may be recursive
     res.instance_exec &block if block_given?
+
     res
   end
 
@@ -44,47 +49,47 @@ class NoosferoResource < Chef::Resource::LWRPBase
     end
   end
 
-  protected
-
   # Translate hash attributes into child resources
   # So that we can just import node attributes as follow
-  #   node[:noosfero][:sites].each do |site, values|
+  #   node[:noosfero][:sites].each do |site, attrs|
   #     noosfero_site site do
-  #       values.each do |attr, value|
-  #         send attr, value
+  #       attrs.each do |attr, attrs|
+  #         send attr, attrs
   #       end
   #     end
   #   end
-  def set_or_return symbol, arg, validation
-    kind_of = validation[:kind_of]
+  def self.attribute name, options = {}
+    kind_of       = options[:kind_of]
     resource_type = kind_of.is_a?(Class) && kind_of <= Chef::Resource::LWRPBase
 
-    unless resource_type
-      # deep merge attributes, as done with node attributes
-      default = validation[:default]
-      if arg and default and (arg.is_a? Hash or arg.is_a? Array)
-        default = default.call self if default.is_a? Chef::DelayedEvaluator
-        # uses to_hash from helpers.rb as arg may come from node attributes which is immutable
-        arg = arg.to_hash if arg.is_a? Hash
-        arg = Chef::Mixin::DeepMerge.deep_merge default, arg
-      end
+    super
+
+    return unless resource_type
+
+    define_method name do |attrs=nil|
+      resource   = instance_variable_get :"@#{name}"
+      resource ||= child_resource name do
+        attrs.each{ |a, v| send a, v }
+      end if attrs.present?
+      resource ||= if options[:default].respond_to? :call then options[:default].call self else options[:default] end
+
+      instance_variable_set :"@#{name}", resource
+
+      resource
     end
 
-    if arg and arg.is_a? Hash and resource_type
-      res = self.child_resource symbol do
-        arg.each{ |a, v| send a, v }
-      end
-      super symbol, res, validation
-    else
-      super symbol, arg, validation
+    define_method "#{name}=" do |attrs|
+      send name, attrs
     end
   end
 
+  protected
+
   # delegate missing methods to site
   def method_missing method, *args, &block
-    if self.site
-      self.site.send method, *args, &block
-    end
+    return if self.is_a? Chef::Resource::NoosferoSite
+    return unless @site
+    @site.send method, *args, &block
   end
 
   private
