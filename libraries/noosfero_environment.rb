@@ -3,18 +3,17 @@ require_relative 'noosfero_lwrp'
 class Chef
 
   class Resource::NoosferoEnvironment < NoosferoResource
-    self.resource_name = :noosfero_environment
+    provides :noosfero_environment
+
     actions :create
     default_action :create
 
-    attribute :name, kind_of: String, default: lazy{ |r| r.service_name }
-    attribute :domain, kind_of: String, default: lazy{ |r| r.server_name }
-    attribute :default_language, kind_of: String, default: 'pt'
+    property :name, String, default: lazy{ |r| r.service_name }
+    property :domain, String, default: lazy{ |r| r.server_name }
+    property :default_language, String, default: 'pt'
   end
 
   class Provider::NoosferoEnvironment < NoosferoProvider
-    provides :noosfero_environment
-
     action :create do
       # FIXME: r cannot be seen inside shell block
       r = new_resource

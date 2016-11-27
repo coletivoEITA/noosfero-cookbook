@@ -2,19 +2,19 @@ require 'chef/resource/lwrp_base'
 require 'chef/provider/lwrp_base'
 
 class NoosferoResource < Chef::Resource::LWRPBase
-  Cookbook = 'noosfero'
+  Cookbook = :noosfero
+
   # shortcut to boolean type
-  Boolean = [TrueClass, FalseClass]
+  Boolean  = [TrueClass, FalseClass]
 
   # override on subclasses
-  self.resource_name = nil
   actions :nothing
 
   # top level reference for child resources
-  attribute :site, kind_of: NoosferoResource
+  property :site, NoosferoResource
 
   # identifier for all childs
-  attribute :service_name, name_attribute: true, kind_of: String, default: (lazy do |r|
+  property :service_name, String, name_property: true, default: (lazy do |r|
     r.site.service_name if r.site
   end)
 
@@ -22,9 +22,9 @@ class NoosferoResource < Chef::Resource::LWRPBase
     res = instance_variable_get "@#{attr}"
 
     unless res
-      resource = "#{Cookbook}_#{attr}"
-      klass    = Chef::Resource::const_get camelize(resource).to_sym
-      res      = klass.new self.service_name, self.run_context
+      class_name = camelize("#{Cookbook}_#{attr}").to_sym
+      klass      = Chef::Resource::const_get class_name
+      res        = klass.new self.service_name, self.run_context
     end
     res.class.run_context = self.run_context
 
@@ -58,9 +58,8 @@ class NoosferoResource < Chef::Resource::LWRPBase
   #       end
   #     end
   #   end
-  def self.attribute name, options = {}
-    kind_of       = options[:kind_of]
-    resource_type = kind_of.is_a?(Class) && kind_of <= Chef::Resource::LWRPBase
+  def self.property name, type, options = {}
+    resource_type = type.is_a?(Class) && type <= Chef::Resource::LWRPBase
 
     super
 
@@ -102,8 +101,6 @@ class NoosferoResource < Chef::Resource::LWRPBase
 end
 
 class NoosferoProvider < Chef::Provider::LWRPBase
-  # as an application we need notifies
-  #use_inline_resources if defined? use_inline_resources
 
   def whyrun_supported?
     true
@@ -117,8 +114,8 @@ class NoosferoProvider < Chef::Provider::LWRPBase
     r = new_resource
 
     noosfero_shell name do
+      @site = r.site
       name name
-      site r.site
       instance_exec &block
     end
   end

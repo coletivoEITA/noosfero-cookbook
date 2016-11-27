@@ -3,23 +3,22 @@ require_relative 'noosfero_lwrp'
 class Chef
 
   class Resource::NoosferoAwstats < NoosferoResource
-    self.resource_name = :noosfero_awstats
+    provides :noosfero_awstats
+
     actions :configure
     default_action :configure
 
-    attribute :domain, kind_of: String, default: lazy{ |r| "stats.#{r.server_name}" }
+    property :domain, String, default: lazy{ |r| "stats.#{r.server_name}" }
 
-    attribute :cron_minute, kind_of: String, default: '*/15'
+    property :cron_minute, String, default: '*/15'
 
-    attribute :htpasswd_enabled, kind_of: Boolean, default: true
-    attribute :htpasswd_user, kind_of: String, default: lazy{ |r| r.service_name }
-    attribute :htpasswd_password, kind_of: String, default: lazy{ |r| r.service_name.reverse }
+    property :htpasswd_enabled, Boolean, default: true
+    property :htpasswd_user, String, default: lazy{ |r| r.service_name }
+    property :htpasswd_password, String, default: lazy{ |r| r.service_name.reverse }
 
   end
 
   class Provider::NoosferoAwstats < NoosferoProvider
-    provides :noosfero_awstats
-
     action :configure do
       run_context.include_recipe 'awstats'
 

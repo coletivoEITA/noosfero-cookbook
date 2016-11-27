@@ -3,16 +3,17 @@ require_relative 'noosfero_lwrp'
 class Chef
 
   class Resource::NoosferoRuby < NoosferoResource
-    self.resource_name = :noosfero_ruby
+    provides :noosfero_ruby
+
     actions :configure
     default_action :configure
 
     # TODO: manage system-wide install for rbenv and rvm
-    attribute :from, kind_of: String, default: 'system', equal_to: ['system', 'rbenv', 'rvm']
+    property :from, String, default: 'system', equal_to: ['system', 'rbenv', 'rvm']
 
-    attribute :version, kind_of: String, default: 'system'
+    property :version, String, default: 'system'
 
-    attribute :env, kind_of: Hash, default: {
+    property :env, Hash, default: {
       RUBY_GC_MALLOC_LIMIT: 90000000,
       # don't really help
       #RUBY_HEAP_SLOTS_GROWTH_FACTOR: 1.25,
@@ -20,7 +21,7 @@ class Chef
       #RUBY_FREE_MIN: 600000,
     }
 
-    attribute :allocator, kind_of: String, default: 'jemalloc'
+    property :allocator, String, default: 'jemalloc'
 
     def rbenv?
       self.from == 'rbenv'
@@ -43,8 +44,6 @@ class Chef
   end
 
   class Provider::NoosferoRuby < NoosferoProvider
-    provides :noosfero_ruby
-
     action :configure do
       case r.from
       when 'rbenv'

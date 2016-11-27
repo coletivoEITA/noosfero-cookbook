@@ -3,23 +3,24 @@ require_relative 'noosfero_lwrp'
 class Chef
 
   class Resource::NoosferoSite < NoosferoResource
-    self.resource_name = :noosfero_site
+    provides :noosfero_site
+
     actions :configure
     default_action :configure
 
-    attribute :user,  kind_of: String, default: lazy{ |r| r.service_name }
-    attribute :group, kind_of: String, default: lazy{ |r| r.service_name }
+    property :user,  String, default: lazy{ |r| r.service_name }
+    property :group, String, default: lazy{ |r| r.service_name }
 
-    attribute :version, kind_of: String, default: '1.0.0'
-    attribute :upgrade_script, kind_of: String, default: ''
+    property :version, String, default: '1.0.0'
+    property :upgrade_script, String, default: ''
 
-    attribute :server_name, kind_of: String, default: 'example.com'
-    attribute :custom_domains, kind_of: Array, default: []
-    attribute :redirects, kind_of: Hash, default: {}
+    property :server_name, String, default: 'example.com'
+    property :custom_domains, Array, default: []
+    property :redirects, Hash, default: {}
 
-    attribute :paths_in_code, kind_of: Boolean, default: false
-    attribute :path, kind_of: String, default: nil
-    attribute :user_install, kind_of: Boolean, default: lazy{ |r| r.path.present? }
+    property :paths_in_code, Boolean, default: false
+    property :path, String, default: nil
+    property :user_install, Boolean, default: lazy{ |r| r.path.present? }
 
     Paths = %w[ code data config log run tmp pids ]
     SystemPaths = {
@@ -31,9 +32,9 @@ class Chef
       tmp: proc{ |service_name| "/var/tmp/#{service_name}" },
     }
 
-    attribute :code_path, kind_of: String, default: lazy{ |r| r.path }
+    property :code_path, String, default: lazy{ |r| r.path }
     %w[ data config log run tmp ].each do |dir|
-      attribute "#{dir}_path".to_sym, kind_of: String, default: (lazy do |r|
+      property "#{dir}_path".to_sym, String, default: (lazy do |r|
         if r.paths_in_code
           if dir == 'data' then r.code_path else "#{r.code_path}/#{dir}" end
         elsif r.user_install
@@ -43,42 +44,40 @@ class Chef
         end
       end)
     end
-    attribute :pids_path, kind_of: String, default: lazy{ |r| "#{r.tmp_path}/pids" }
+    property :pids_path, String, default: lazy{ |r| "#{r.tmp_path}/pids" }
 
-    attribute :access_log_path, kind_of: String, default: lazy{ |r| "#{r.log_path}/access.log" }
-    attribute :error_log_path, kind_of: String, default: lazy{ |r| "#{r.log_path}/error.log" }
+    property :access_log_path, String, default: lazy{ |r| "#{r.log_path}/access.log" }
+    property :error_log_path, String, default: lazy{ |r| "#{r.log_path}/error.log" }
 
-    attribute :settings, kind_of: Hash, default: {}
+    property :settings, Hash, default: {}
 
     ### Resources initialized by default run by default
 
-    attribute :ruby, kind_of: NoosferoResource, default: lazy{ |r| r.child_resource :ruby }
-    attribute :rails, kind_of: NoosferoResource, default: lazy{ |r| r.child_resource :rails }
+    property :ruby, NoosferoResource, default: lazy{ |r| r.child_resource :ruby }
+    property :rails, NoosferoResource, default: lazy{ |r| r.child_resource :rails }
 
     # use one of these to install noosfero
-    attribute :git, kind_of: NoosferoResource, default: nil
-    attribute :package, kind_of: NoosferoResource, default: nil
+    property :git, NoosferoResource, default: nil
+    property :package, NoosferoResource, default: nil
 
-    attribute :db, kind_of: NoosferoResource, default: lazy{ |r| r.child_resource :db }
-    attribute :dependencies, kind_of: NoosferoResource, default: lazy{ |r| r.child_resource :dependencies }
+    property :db, NoosferoResource, default: lazy{ |r| r.child_resource :db }
+    property :dependencies, NoosferoResource, default: lazy{ |r| r.child_resource :dependencies }
 
     # called by db on new db creation
-    attribute :environment, kind_of: NoosferoResource, default: nil
+    property :environment, NoosferoResource, default: nil
 
-    attribute :plugins, kind_of: NoosferoResource, default: nil
-    attribute :server, kind_of: NoosferoResource, default: lazy{ |r| r.child_resource :server }
+    property :plugins, NoosferoResource, default: nil
+    property :server, NoosferoResource, default: lazy{ |r| r.child_resource :server }
 
-    attribute :chat, kind_of: NoosferoResource, default: nil
+    property :chat, NoosferoResource, default: nil
 
-    attribute :logrotate, kind_of: NoosferoResource, default: nil
-    attribute :awstats, kind_of: NoosferoResource, default: nil
-    attribute :backup, kind_of: NoosferoResource, default: nil
+    property :logrotate, NoosferoResource, default: nil
+    property :awstats, NoosferoResource, default: nil
+    property :backup, NoosferoResource, default: nil
 
   end
 
   class Provider::NoosferoSite < NoosferoProvider
-    provides :noosfero_site
-
     action :configure do
       create_user if r.user_install
       define_base_resources

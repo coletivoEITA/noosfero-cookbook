@@ -3,18 +3,17 @@ require_relative 'noosfero_lwrp'
 class Chef
 
   class Resource::NoosferoLogrotate < NoosferoResource
-    self.resource_name = :noosfero_logrotate
+    provides :noosfero_logrotate
+
     actions :configure
     default_action :configure
 
-    attribute :rotate, kind_of: Integer, default: 100_000
-    attribute :frequency, kind_of: String, default: 'daily'
-    attribute :options, kind_of: String, default: ['copytruncate', 'compress', 'delaycompress', 'notifempty', 'missingok']
+    property :rotate, Integer, default: 100_000
+    property :frequency, String, default: 'daily'
+    property :options, String, default: ['copytruncate', 'compress', 'delaycompress', 'notifempty', 'missingok']
   end
 
   class Provider::NoosferoLogrotate < NoosferoProvider
-    provides :noosfero_logrotate
-
     action :configure do
       # FIXME: r cannot be seen inside blocks
       r = new_resource

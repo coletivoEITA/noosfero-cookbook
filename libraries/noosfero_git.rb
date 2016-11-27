@@ -3,14 +3,15 @@ require_relative 'noosfero_lwrp'
 class Chef
 
   class Resource::NoosferoGit < NoosferoResource
-    self.resource_name = :noosfero_git
+    provides :noosfero_git
+
     actions :install
     default_action :install
 
-    attribute :repository, kind_of: String, default: "https://gitlab.com/noosfero/noosfero.git"
-    attribute :revision, kind_of: String, default: 'master'
+    property :repository, String, default: "https://gitlab.com/noosfero/noosfero.git"
+    property :revision, String, default: 'master'
 
-    attribute :timeout, kind_of: Integer, default: 100_000_000
+    property :timeout, Integer, default: 100_000_000
   end
 
   class Provider::NoosferoGit < NoosferoProvider

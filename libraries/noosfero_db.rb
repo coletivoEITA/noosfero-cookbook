@@ -3,25 +3,24 @@ require_relative 'noosfero_lwrp'
 class Chef
 
   class Resource::NoosferoDb < NoosferoResource
-    self.resource_name = :noosfero_db
+    provides :noosfero_db
+
     actions :create
     default_action :create
 
-    attribute :dbname, kind_of: String, default: lazy{ |r| r.service_name }
+    property :dbname, String, default: lazy{ |r| r.service_name }
 
-    attribute :hostname, kind_of: String, default: 'localhost'
-    attribute :port, kind_of: String, default: lazy{ |r| node[:postgresql][:config][:port] }
+    property :hostname, String, default: 'localhost'
+    property :port, String, default: lazy{ |r| node[:postgresql][:config][:port] }
 
-    attribute :username, kind_of: String, default: lazy{ |r| r.user }
-    attribute :password, kind_of: String, default: ''
+    property :username, String, default: lazy{ |r| r.user }
+    property :password, String, default: ''
 
-    attribute :create_from_dump, kind_of: String, default: nil
+    property :create_from_dump, String, default: nil
 
   end
 
   class Provider::NoosferoDb < NoosferoProvider
-    provides :noosfero_db
-
     action :create do
       if Chef::Config[:solo] and r.password.nil?
         Chef::Application.fatal! "The db password is necessary when using Chef::Solo"

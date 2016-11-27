@@ -3,21 +3,20 @@ require_relative 'noosfero_lwrp'
 class Chef
 
   class Resource::NoosferoRails < NoosferoResource
-    self.resource_name = :noosfero_rails
+    provides :noosfero_rails
+
     actions :configure
     default_action :configure
 
-    attribute :env, kind_of: String, default: 'production'
+    property :env, String, default: 'production'
 
-    attribute :runner, kind_of: String, default: lazy{ |r| if r.version > '1.0' then 'rails runner' else 'script/runner' end }
+    property :runner, String, default: lazy{ |r| if r.version > '1.0' then 'rails runner' else 'script/runner' end }
 
-    attribute :cache_store, kind_of: String, default: 'memcache'
+    property :cache_store, String, default: 'memcache'
 
   end
 
   class Provider::NoosferoRails < NoosferoProvider
-    provides :noosfero_rails
-
     action :configure do
       case r.cache_store
       when'memcache'

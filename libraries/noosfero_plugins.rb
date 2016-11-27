@@ -3,18 +3,19 @@ require_relative 'noosfero_lwrp'
 class Chef
 
   class Resource::NoosferoPlugins < NoosferoResource
-    self.resource_name = :noosfero_plugins
+    provides :noosfero_plugins
+
     actions :enable
     default_action :enable
 
     BasePlugins = %w[ people_block statistics ]
 
-    attribute :list, kind_of: [Array, String], default: BasePlugins
-    attribute :settings, kind_of: Hash, default: {
+    property :list, [Array, String], default: BasePlugins
+    property :settings, Hash, default: {
       solr: {
         address: '127.0.0.1',
-        port: 8983,
-        memory: 192,
+        port:    8983,
+        memory:  192,
         timeout: 600,
       },
     }
@@ -22,7 +23,6 @@ class Chef
   end
 
   class Provider::NoosferoPlugins < NoosferoProvider
-    provides :noosfero_plugins
 
     # FIXME: whyrun not supported if code is not yet fetched
     def whyrun_supported?

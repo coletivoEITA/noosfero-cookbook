@@ -3,18 +3,17 @@ require_relative 'noosfero_lwrp'
 class Chef
 
   class Resource::NoosferoShell < NoosferoResource
-    self.resource_name = :noosfero_shell
+    provides :noosfero_shell
+
     actions :run
     default_action :run
 
-    attribute :name, kind_of: String, name_attribute: true, default: nil
-    attribute :code, kind_of: String, required: true, default: nil
+    property :name, String, name_property: true, default: nil
+    property :code, String, required: true, default: nil
 
   end
 
   class Provider::NoosferoShell < NoosferoProvider
-    provides :noosfero_shell
-
     action :run do
       # FIXME: r cannot be seen inside shell block
       r = new_resource

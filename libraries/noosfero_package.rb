@@ -3,15 +3,14 @@ require_relative 'noosfero_lwrp'
 class Chef
 
   class Resource::NoosferoPackage < NoosferoResource
-    self.resource_name = :noosfero_package
+    provides :noosfero_package
+
     actions :install
     default_action :install
 
   end
 
   class Provider::NoosferoPackage < NoosferoProvider
-    provides :noosfero_package
-
     action :create do
       r = new_resource
 

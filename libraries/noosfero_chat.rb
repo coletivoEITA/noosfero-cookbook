@@ -3,28 +3,27 @@ require_relative 'noosfero_lwrp'
 class Chef
 
   class Resource::NoosferoChat < NoosferoResource
-    self.resource_name = :noosfero_chat
+    provides :noosfero_chat
+
     actions :configure
     default_action :configure
 
-    attribute :packages, kind_of: Array, default: %w[ejabberd odbc-postgresql unixodbc pidgin-data]
+    property :packages, Array, default: %w[ejabberd odbc-postgresql unixodbc pidgin-data]
 
-    attribute :port, kind_of: Fixnum, default: 5280
+    property :port, Fixnum, default: 5280
 
-    attribute :ejabberd_user, kind_of: String, default: 'ejabberd'
-    attribute :ejabberd_group, kind_of: String, default: 'ejabberd'
+    property :ejabberd_user, String, default: 'ejabberd'
+    property :ejabberd_group, String, default: 'ejabberd'
 
-    attribute :schema_sql_path, kind_of: String, default: (lazy do |r|
+    property :schema_sql_path, String, default: (lazy do |r|
       "#{r.site.code_path}/util/chat/postgresql/ejabberd.sql"
     end)
 
-    attribute :odbc_dsn, kind_of: String, default: 'PostgreSQLEjabberdNoosfero'
-    attribute :odbc_driver, kind_of: String, default: 'PostgreSQL Unicode'
+    property :odbc_dsn, String, default: 'PostgreSQLEjabberdNoosfero'
+    property :odbc_driver, String, default: 'PostgreSQL Unicode'
   end
 
   class Provider::NoosferoChat < NoosferoProvider
-    provides :noosfero_chat
-
     action :configure do
       # FIXME
       r = new_resource

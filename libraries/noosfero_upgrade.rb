@@ -3,14 +3,13 @@ require_relative 'noosfero_lwrp'
 class Chef
 
   class Resource::NoosferoUpgrade < NoosferoResource
-    self.resource_name = :noosfero_upgrade
+    provides :noosfero_upgrade
+
     actions :run
     default_action :run
   end
 
   class Provider::NoosferoUpgrade < NoosferoProvider
-    provides :noosfero_upgrade
-
     action :run do
       # FIXME: r cannot be seen inside shell block
       r = new_resource
