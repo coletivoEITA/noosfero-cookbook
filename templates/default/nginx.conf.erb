@@ -2,7 +2,7 @@
 server {
   listen <%= @site.server.proxy.port %>;
   <% if @site.server.ssl %>
-  listen 443 ssl
+  listen 443 ssl;
   ssl_protocols <%= @site.server.ssl.protocols %>;
   <% end %>
 
@@ -15,7 +15,7 @@ server {
 server {
   listen <%= @site.server.proxy.port %>;
   <% if @site.server.ssl %>
-  listen 443 ssl
+  listen 443 ssl;
   ssl_protocols <%= @site.server.ssl.protocols %>;
   <% end %>
 
@@ -29,7 +29,7 @@ server {
 server {
   listen <%= @site.server.proxy.port %>;
   <% if @site.server.ssl %>
-  listen 443 ssl
+  listen 443 ssl;
   ssl_protocols <%= @site.server.ssl.protocols %>;
   <% end %>
 
